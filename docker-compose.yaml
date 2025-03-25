@@ -1,0 +1,48 @@
+services:
+  sportsy-database:
+    image: postgres:13
+    container_name: sportsy-database
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    healthcheck:
+      test:
+        ['CMD', 'pg_isready', '-U', '${POSTGRES_USER}', '-d', '${POSTGRES_DB}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    ports:
+      - ${POSTGRES_PORT}:5432
+    volumes:
+      - sportsy-database1:/var/lib/postgresql/data
+    networks:
+      - sportsy-network
+
+  sportsy-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sportsy-app
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PORT: 5432
+      POSTGRES_HOST: sportsy-database
+      JWT_SECRET: ${JWT_SECRET}
+    ports:
+      - 3000:3000
+    depends_on:
+      sportsy-database:
+        condition: service_healthy
+    networks:
+      - sportsy-network
+
+volumes:
+  sportsy-database1:
+
+networks:
+  sportsy-network:
+    driver: bridge
