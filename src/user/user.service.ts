@@ -1,8 +1,23 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
-import { CreateUserDto } from './dto/createUser.dto'; 
+import { CreateUserDto } from './dto/createUser.dto';
+
+type UserCredentials = {
+  email: string;
+  password: string;
+};
+
+type UserUniqueData = {
+  email: string;
+  username: string;
+};
 
 @Injectable()
 export class UserService {
@@ -16,7 +31,7 @@ export class UserService {
     try {
       return await this.usersRepository.save(user);
     } catch (error) {
-      throw error; 
+      throw error;
     }
   }
 
@@ -29,12 +44,25 @@ export class UserService {
   }
 
   async findOne(id: number): Promise<User | null> {
-    const user = await this.usersRepository.findOne({ where: { id } });
-    if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
-    }
-    return user;
+    return await this.usersRepository.findOne({ where: { id } });
   }
 
+  async validateUserExistence(
+    credentials: Partial<UserUniqueData>,
+  ): Promise<boolean> {
+    if (!credentials.email && !credentials.username) {
+      throw new HttpException(
+        'Email or username must be provided',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
 
+    const user = await this.usersRepository.findOne({
+      where: [
+        credentials.email ? { email: credentials.email } : {},
+        credentials.username ? { username: credentials.username } : {},
+      ],
+    });
+    return !!user;
+  }
 }

@@ -1,67 +1,70 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  HttpStatus,
+  HttpException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UserService } from '../user/user.service'; 
+import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcrypt';
 import { LoginAuthDto } from './dto/loginAuth.dto';
 import { RegisterAuthDto } from './dto/registerAuth.dto';
+import { PublicUserDto } from 'src/user/dto/publicUser.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private usersService: UserService,
+    private userService: UserService,
     private jwtService: JwtService,
   ) {}
 
   async register(registerDto: RegisterAuthDto) {
-    const existingUser = await this.usersService.findByEmail(registerDto.email);
-    if (existingUser) {
-      throw new BadRequestException('E-mail already taken');
+    if (await this.userService.validateUserExistence({ ...registerDto })) {
+      throw new BadRequestException('E-mail or username is already taken.');
     }
-
-    const hashedPassword = await bcrypt.hash(registerDto.password, 10);
-    const newUser = await this.usersService.create({
-      username: registerDto.username,
-      passwordHash: hashedPassword,
-      email: registerDto.email,
+    await this.userService.create({
+      ...registerDto,
     });
 
-    return {
-      id: newUser.id,
-      email: newUser.email,
-      username: newUser.username,
-      success: 'true',
-    };
+    return HttpStatus.CREATED;
   }
 
-  async login(loginDto: LoginAuthDto) {
-    const user = await this.usersService.findByEmail(loginDto.email);
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    const passwordMatch = await bcrypt.compare(loginDto.password, user.passwordHash);
-    if (!passwordMatch) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    const payload = { sub: user.id, email: user.email };
-    const accessToken = await this.jwtService.sign(payload);
-    return {
-      access_token: accessToken 
-    };
+  async generateAccessToken(publicUser: PublicUserDto): Promise<string> {
+    const payload = { email: publicUser.email, sub: publicUser.id };
+    return this.jwtService.sign(payload);
   }
 
-  async logout() {
-    return { success: true, message: 'Logout successful' };
-  }
-
-  async validateUser(email: string, pass: string): Promise<any> {
-    
-    const user = await this.usersService.findByEmail(email);
-    if (user && await bcrypt.compare(pass, user.passwordHash)) {
-      const { passwordHash, ...result } = user; 
+  //Restructure method
+  async validateUserCredentials(
+    credentials: LoginAuthDto,
+  ): Promise<PublicUserDto> {
+    const { email, password } = credentials;
+    const user = await this.userService.findByEmail(email);
+    if (user && (await bcrypt.compare(password, user.password))) {
+      const { password, ...result } = user;
       return result;
     }
     return null;
+  }
+
+  async verifyUserCredentials(
+    credentials: LoginAuthDto,
+  ): Promise<PublicUserDto> {
+    const { email, password } = credentials;
+    const user = await this.userService.findByEmail(email);
+
+    if (!user) {
+      throw new HttpException(
+        'User with given email not found.',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    if (!(await bcrypt.compare(password, user.password))) {
+      throw new HttpException('Invalid credentials.', HttpStatus.UNAUTHORIZED);
+    }
+
+    const { password: _, ...result } = user;
+    return result;
   }
 }

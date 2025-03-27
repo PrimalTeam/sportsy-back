@@ -1,4 +1,11 @@
-import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  CreateDateColumn,
+  PrimaryGeneratedColumn,
+  BeforeInsert,
+} from 'typeorm';
+import * as bcrypt from 'bcrypt';
 
 @Entity('users')
 export class User {
@@ -12,14 +19,23 @@ export class User {
   email: string;
 
   @Column()
-  passwordHash: string;
+  password: string;
 
-  @Column({ type: 'text', default: '[]',  transformer: {
-    to: (value: string[]) => JSON.stringify(value),
-    from: (value: string) => JSON.parse(value)
-  } })
+  @Column({
+    type: 'text',
+    default: '[]',
+    transformer: {
+      to: (value: string[]) => JSON.stringify(value),
+      from: (value: string) => JSON.parse(value),
+    },
+  })
   roles: string[];
 
-  @CreateDateColumn()
+  @BeforeInsert()
+  async hashPassword() {
+    this.password = await bcrypt.hash(this.password, 10);
+  }
+
+  @CreateDateColumn({ default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 }

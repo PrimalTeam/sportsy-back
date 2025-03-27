@@ -1,24 +1,30 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { AuthService } from '../auth.service';
 import { ConfigService } from '@nestjs/config';
+import { AccessTokenPayload } from '../models/accessToken';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private authService: AuthService, private configService: ConfigService) {
+  constructor(
+    private userService: UserService,
+    private configService: ConfigService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('jwt.secret'),
+      secretOrKey: configService.get<string>('JWT_SECRET'),
     });
   }
 
-  async validate(payload: any) {
-    // const user = await this.authService.validateUserByPayload(payload);
-    // if (!user) {
-    //   throw new UnauthorizedException();
-    // }
-    return payload; 
+  async validate(payload: AccessTokenPayload) {
+    const user = this.userService.findByEmail(payload.email);
+    if (!user) {
+      throw new UnauthorizedException(
+        "The user with given email in token doesn't exist",
+      );
+    }
+    return payload;
   }
 }
