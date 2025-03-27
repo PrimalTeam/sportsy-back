@@ -28,6 +28,7 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_PORT: 5432
       POSTGRES_HOST: sportsy-database
