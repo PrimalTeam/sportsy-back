@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 import { DataSource } from 'typeorm';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
-import { User } from './user/entities/user.entity';
+import { User } from './modules/user/entities/user.entity';
 
 const commonOptions: PostgresConnectionOptions = {
   type: 'postgres',

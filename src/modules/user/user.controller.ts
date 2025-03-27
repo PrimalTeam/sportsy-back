@@ -8,7 +8,7 @@ import {
 import { UserService } from './user.service';
 import { JwtGuard } from 'src/guards/auth.guard';
 import { UserFromRequest } from 'src/decorators/user.decorator';
-import { AccessTokenPayload } from 'src/auth/models/accessToken';
+import { AccessTokenPayload } from '../auth/models/accessToken';
 
 @Controller('user')
 export class UserController {
