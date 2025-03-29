@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Param } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterAuthDto } from './dto/registerAuth.dto';
 import { LoginAuthDto } from './dto/loginAuth.dto';
@@ -18,6 +18,11 @@ export class AuthController {
   @UseGuards(AuthGuard('local'))
   @Post('login')
   async login(@UserFromRequest() user: User, @Body() loginDto: LoginAuthDto) {
-    return this.authService.generateAccessToken(user);
+    return this.authService.generateLoginResponse(user);
+  }
+
+  @Post('refresh/:refreshToken')
+  async refresh(@Param('refreshToken') refreshToken: string) {
+    return this.authService.refreshToken(refreshToken);
   }
 }

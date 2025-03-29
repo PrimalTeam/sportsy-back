@@ -3,6 +3,7 @@ import {
   BadRequestException,
   HttpStatus,
   HttpException,
+  Inject,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
@@ -10,12 +11,18 @@ import * as bcrypt from 'bcrypt';
 import { LoginAuthDto } from './dto/loginAuth.dto';
 import { RegisterAuthDto } from './dto/registerAuth.dto';
 import { PublicUserDto } from '../user/dto/publicUser.dto';
+import { AccessTokenPayloadCreate } from './models/accessToken';
+import { RefreshTokenPayloadCreate } from './models/refreshToken';
+import { ProvidersNames } from './custom-providers';
 
 @Injectable()
 export class AuthService {
   constructor(
     private userService: UserService,
-    private jwtService: JwtService,
+    @Inject(ProvidersNames.ACCESS_TOKEN_SERVICE)
+    private accessJwtService: JwtService,
+    @Inject(ProvidersNames.REFRESH_TOKEN_SERVICE)
+    private refreshJwtService: JwtService,
   ) {}
 
   async register(registerDto: RegisterAuthDto) {
@@ -30,8 +37,48 @@ export class AuthService {
   }
 
   async generateAccessToken(publicUser: PublicUserDto): Promise<string> {
-    const payload = { email: publicUser.email, sub: publicUser.id };
-    return this.jwtService.sign(payload);
+    const payload: AccessTokenPayloadCreate = {
+      email: publicUser.email,
+      sub: publicUser.id,
+    };
+    return this.accessJwtService.sign(payload);
+  }
+
+  async generateRefreshToken(publicUser: PublicUserDto): Promise<string> {
+    const payload: RefreshTokenPayloadCreate = {
+      email: publicUser.email,
+      sub: publicUser.id,
+    };
+    return this.refreshJwtService.sign(payload);
+  }
+
+  async generateLoginResponse(publicUser: PublicUserDto) {
+    return {
+      access_token: await this.generateAccessToken(publicUser),
+      refresh_token: await this.generateRefreshToken(publicUser),
+    };
+  }
+
+  async refreshToken(
+    refreshToken: string,
+  ): Promise<{ access_token: string; refresh_token: string }> {
+    const payload = this.refreshJwtService.verify(refreshToken);
+    if (!payload) {
+      throw new HttpException(
+        'Invalid refresh token.',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+
+    const user = await this.userService.findByEmail(payload.email);
+    if (!user) {
+      throw new HttpException(
+        'User with given email not found.',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    return this.generateLoginResponse(user);
   }
 
   //Restructure method
