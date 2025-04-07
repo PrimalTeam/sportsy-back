@@ -1,4 +1,10 @@
-import { ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  ExecutionContext,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
+import { JsonWebTokenError, TokenExpiredError } from '@nestjs/jwt';
 import { AuthGuard } from '@nestjs/passport';
 import { Observable } from 'rxjs';
 
@@ -8,9 +14,20 @@ export class JwtGuard extends AuthGuard('jwt') {
     super();
   }
 
-  canActivate(
-    context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
-    return super.canActivate(context);
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    try {
+      await super.canActivate(context);
+      return true;
+    } catch (err) {
+      if (err instanceof TokenExpiredError) {
+        throw new HttpException('Token has expired', 498);
+      }
+
+      if (err instanceof JsonWebTokenError) {
+        throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
+      }
+
+      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+    }
   }
 }
