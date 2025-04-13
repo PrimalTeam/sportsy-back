@@ -9,6 +9,7 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/createUser.dto';
 import { Room } from '../room/entities/room.entity';
+import { RoomUserRole } from '../roomUser/entities/roomUser.entity';
 
 type UserCredentials = {
   email: string;
@@ -48,9 +49,12 @@ export class UserService {
     return await this.usersRepository.findOne({ where: { id } });
   }
 
-  async getUserRooms(id: number): Promise<Room[]> {
+  async getUserRooms(id: number): Promise<(Room & { role: RoomUserRole })[]> {
     const user = await this.getUserWithRooms(id);
-    return user.roomUsers.map((roomUser) => roomUser.room);
+    return user.roomUsers.map((roomUser) => ({
+      ...roomUser.room,
+      role: roomUser.role,
+    }));
   }
 
   async getUserWithRooms(id: number): Promise<User> {
