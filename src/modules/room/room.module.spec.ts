@@ -203,8 +203,8 @@ describe('Room Module Test (e2e)', () => {
       roomId = (response.body as Room).id;
 
       await roomUserService.addRoomUser(
-        { role: RoomUserRole.SPECTRATOR, roomId: roomId },
-        nonAdminUser.id,
+        { role: RoomUserRole.SPECTRATOR, userId: nonAdminUser.id },
+        roomId,
       );
     });
 
@@ -279,8 +279,8 @@ describe('Room Module Test (e2e)', () => {
       roomId = (response.body as Room).id;
 
       await roomUserService.addRoomUser(
-        { role: RoomUserRole.SPECTRATOR, roomId: roomId },
-        nonAdminUser.id,
+        { role: RoomUserRole.SPECTRATOR, userId: nonAdminUser.id },
+        roomId,
       );
     });
 

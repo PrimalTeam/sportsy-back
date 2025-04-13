@@ -2,7 +2,7 @@ import { RoomUserRole } from '../entities/roomUser.entity';
 
 export class CreateRoomUserDto {
   readonly role: RoomUserRole;
-  readonly roomId: number;
+  readonly userId: number;
 }
 
 export class GenerateRoomUserDto {

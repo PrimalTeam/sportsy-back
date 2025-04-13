@@ -16,9 +16,9 @@ export class RoomUserService {
     private readonly roomUserRepository: Repository<RoomUser>,
   ) {}
 
-  addRoomUser(roomUser: CreateRoomUserDto, userId: number) {
+  addRoomUser(roomUser: CreateRoomUserDto, roomId: number) {
     const newRoomUser = this.roomUserRepository.create(roomUser);
-    newRoomUser.userId = userId;
+    newRoomUser.roomId = roomId;
     return this.roomUserRepository.save(newRoomUser);
   }
 

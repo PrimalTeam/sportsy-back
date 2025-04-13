@@ -159,11 +159,14 @@ describe('Room Services Integration Test', () => {
 
     it('should add a user to the room', async () => {
       const roomUser: CreateRoomUserDto = {
-        roomId: roomCreated.id,
+        userId: 2,
         role: RoomUserRole.SPECTRATOR,
       };
 
-      const roomUserCreated = await roomUserService.addRoomUser(roomUser, 2);
+      const roomUserCreated = await roomUserService.addRoomUser(
+        roomUser,
+        roomCreated.id,
+      );
 
       expect(roomUserCreated).toBeDefined();
       expect(roomUserCreated.id).toBeDefined();

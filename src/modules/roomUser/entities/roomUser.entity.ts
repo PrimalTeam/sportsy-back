@@ -10,7 +10,7 @@ import { User } from '../../user/entities/user.entity';
 
 export enum RoomUserRole {
   ADMIN = 'admin',
-  SPECTRATOR = 'spectator',
+  SPECTRATOR = 'spectrator',
   GAMEOBSERVER = 'gameObserver',
 }
 
