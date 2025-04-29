@@ -8,6 +8,8 @@ import { UserModule } from './modules/user/user.module';
 import { User } from './modules/user/entities/user.entity';
 import { JwtStrategy } from './modules/auth/strategies/jwt.strategy';
 import { LocalStrategy } from './modules/auth/strategies/local.strategy';
+import { Game } from './modules/game/entities/game.entity';
+import { GameModule } from './modules/game/game.module';
 
 @Module({
   imports: [
@@ -16,6 +18,7 @@ import { LocalStrategy } from './modules/auth/strategies/local.strategy';
     }),
     UserModule,
     AuthModule,
+    GameModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {

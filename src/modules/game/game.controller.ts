@@ -23,6 +23,13 @@ export class GameController {
   }
 
   @UseGuards(JwtGuard)
+  @Get('by-tournament/:tournamentId')
+  findByTournamentId(@Param('tournamentId') tournamentId: string) {
+    return this.gameService.findByTournamentId(+tournamentId);
+  }
+
+
+  @UseGuards(JwtGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateGameDto: UpdateGameDto) {
     return this.gameService.update(+id, updateGameDto);

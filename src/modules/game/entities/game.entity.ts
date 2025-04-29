@@ -27,4 +27,9 @@ export class Game {
   @Column({ type: 'jsonb', nullable: true, default: [] })
   gameActions: string[];
 
+  // @ManyToOne(() => Tournament, tournament => tournament.games)
+  // @JoinColumn({ name: 'tournamentId' })
+  // tournament: Tournament;
+
+
 }

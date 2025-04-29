@@ -14,4 +14,8 @@ export class CreateGameDto {
   gameActions?: string[];
   @IsOptional()
   tournamentId?: number;
+   
+  @IsOptional()
+  @IsNumber()
+  tournamentId?: number;
 }
