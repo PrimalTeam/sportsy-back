@@ -25,6 +25,6 @@ jobs:
           ssh -i ~/.ssh/id_ed25519 ${{ secrets.SPOR_VM_USER }}@${{ secrets.SPOR_VM_IP }} << 'EOF'
             cd sportsy-back
             git pull origin main
-            docker compose down
-            docker compose up -d --build
+            sudo docker compose down
+            sudo docker compose up -d --build
           EOF
