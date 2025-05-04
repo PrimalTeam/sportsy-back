@@ -5,6 +5,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Post,
   UseGuards,
   UseInterceptors,
@@ -41,21 +42,21 @@ export class RoomController {
   @Get('users/:roomId')
   @RoomRole()
   @UseGuards(JwtGuard, RoomGuard)
-  async getUsersOfRoom(@Param('roomId') roomId: number) {
+  async getUsersOfRoom(@Param('roomId', ParseIntPipe) roomId: number) {
     return this.roomService.getUsersOfRoom(roomId);
   }
 
   @Delete('/:roomId')
   @RoomRole(RoomUserRole.ADMIN)
   @UseGuards(JwtGuard, RoomGuard)
-  async deleteRoom(@Param('roomId') roomId: number) {
+  async deleteRoom(@Param('roomId', ParseIntPipe) roomId: number) {
     return this.roomService.deleteRoomById(roomId);
   }
 
   @Get('/:roomId')
   @RoomRole()
   @UseGuards(JwtGuard, RoomGuard)
-  async getRoom(@Param('roomId') roomId: number) {
+  async getRoom(@Param('roomId', ParseIntPipe) roomId: number) {
     return this.roomService.findRoomById(roomId);
   }
 }

@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { RoomUserService } from './roomUser.service';
 import { JwtGuard } from 'src/guards/auth.guard';
 import { RoomGuard } from 'src/guards/room.guard';
@@ -16,7 +24,7 @@ export class RoomUserController {
   @UseGuards(JwtGuard, RoomGuard)
   @RoomRole(RoomUserRole.ADMIN)
   async addUserToRoom(
-    @Param('roomId') roomId: number,
+    @Param('roomId', ParseIntPipe) roomId: number,
     @Body() createRoomUserDto: CreateRoomUserDto,
   ) {
     return await this.roomUserService.addRoomUser(createRoomUserDto, roomId);
@@ -26,8 +34,8 @@ export class RoomUserController {
   @UseGuards(JwtGuard, RoomGuard)
   @RoomRole(RoomUserRole.ADMIN)
   async getRoomUser(
-    @Param('roomId') roomId: number,
-    @Param('userId') userId: number,
+    @Param('roomId', ParseIntPipe) roomId: number,
+    @Param('userId', ParseIntPipe) userId: number,
   ) {
     return await this.roomUserService.findByUserAndRoomId({ roomId, userId });
   }
