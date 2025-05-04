@@ -4,7 +4,7 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { UserModule } from '../user/user.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ProvidersNames } from './custom-providers';
+import { ProvidersNames } from '../custom-providers';
 
 @Module({
   imports: [UserModule, JwtModule.register({})],
