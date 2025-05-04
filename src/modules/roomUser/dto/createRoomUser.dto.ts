@@ -1,12 +1,20 @@
+import { UserIdentifierType } from 'src/modules/user/entities/user.entity';
 import { RoomUserRole } from '../entities/roomUser.entity';
 
-export class CreateRoomUserDto {
-  readonly role: RoomUserRole;
-  readonly userId: number;
+export interface RoomUserFindOptions{
+  readonly identifier: string;
+  readonly identifierType: UserIdentifierType;
 }
 
-export class GenerateRoomUserDto {
-  readonly userId?: number;
+export class CreateRoomUserDto implements RoomUserFindOptions {
+  readonly role: RoomUserRole;
+  readonly identifier: string;
+  readonly identifierType: UserIdentifierType;
+}
+
+export class GenerateRoomUserDto implements RoomUserFindOptions {
   readonly roomId?: number;
+  readonly identifier: string;
+  readonly identifierType: UserIdentifierType;
   readonly role: RoomUserRole;
 }

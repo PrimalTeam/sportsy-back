@@ -1,29 +1,46 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Room } from './entities/room.entity';
 import { Repository } from 'typeorm';
 import { CreateRoomDto } from './dto/createRoom.dto';
 import { RoomUserService } from '../roomUser/roomUser.service';
 import { RoomUserRole } from '../roomUser/entities/roomUser.entity';
-import { User } from '../user/entities/user.entity';
+import { User, UserIdentifierType } from '../user/entities/user.entity';
+import { TournamentService } from '../tournament/tournament.service';
 
 @Injectable()
 export class RoomService {
   constructor(
     @InjectRepository(Room) private readonly roomRepository: Repository<Room>,
     private readonly roomUserService: RoomUserService,
+    private readonly tournamentService: TournamentService,
   ) {}
 
   async createRoom(
     createRoomDto: CreateRoomDto,
     userId: number,
   ): Promise<Room> {
-    const room = this.roomRepository.create(createRoomDto);
-    const roomUser = this.roomUserService.generateRoomUser({
+    const {roomUsers, tournament, ...roomDto } = createRoomDto
+    const room = this.roomRepository.create({...roomDto});
+    if (roomUsers && roomUsers.length > 0) {
+      const newRoomUsers = await this.roomUserService.generateRoomUserList(roomUsers); 
+      if (roomUsers.some((roomUser)=> roomUser === null)) 
+        throw new HttpException('User for adding to the room not found', HttpStatus.BAD_REQUEST);
+      else
+        room.roomUsers.push(...newRoomUsers);
+    }
+    if (tournament) {
+      const newTournament = await this.tournamentService.generateTournament({
+        ...tournament,
+      })
+      room.tournament = newTournament;
+    }
+    const roomUser = await this.roomUserService.generateRoomUser({
       role: RoomUserRole.ADMIN,
-      userId: userId,
+      identifier: userId.toString(),
+      identifierType: UserIdentifierType.ID,
     });
-    room.roomUsers = [roomUser];
+    room.roomUsers.push(roomUser);
     return await this.roomRepository.save(room);
   }
 

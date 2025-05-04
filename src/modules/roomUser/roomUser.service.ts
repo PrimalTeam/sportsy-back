@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RoomUser } from './entities/roomUser.entity';
 import { Repository } from 'typeorm';
@@ -6,6 +6,9 @@ import {
   CreateRoomUserDto,
   GenerateRoomUserDto,
 } from './dto/createRoomUser.dto';
+import { UserLookupService } from '../user/interfaces/userService.interface';
+import { ProvidersNames } from '../custom-providers';
+import { UserIdentifierType } from '../user/entities/user.entity';
 
 type RoomUserFindOptions = Pick<RoomUser, 'roomId' | 'userId'>;
 
@@ -14,19 +17,42 @@ export class RoomUserService {
   constructor(
     @InjectRepository(RoomUser)
     private readonly roomUserRepository: Repository<RoomUser>,
+    @Inject(ProvidersNames.USER_LOOKUP_SERVICE)
+    private readonly userLookupService: UserLookupService,
   ) {}
 
-  addRoomUser(roomUser: CreateRoomUserDto, roomId: number) {
-    const newRoomUser = this.roomUserRepository.create(roomUser);
-    newRoomUser.roomId = roomId;
+  async getValidatedUserId(
+    identifier: string,
+    identifierType: UserIdentifierType,
+  ): Promise<number> {
+    const userId = await this.userLookupService.getUserIdByIdentifier(
+      identifier,
+      identifierType,
+    );
+    if (!userId) {
+      throw new HttpException('User not found', HttpStatus.BAD_REQUEST);
+    }
+    return userId;
+  }
+
+  async addRoomUser(roomUserDto: CreateRoomUserDto, roomId: number) {
+    const { identifier, identifierType, role } = roomUserDto;
+    const userId = await this.getValidatedUserId(identifier, identifierType)
+    const newRoomUser = this.roomUserRepository.create({
+      userId,
+      role,
+      roomId,
+    });
     return this.roomUserRepository.save(newRoomUser);
   }
 
   async changeRoomUserRole({
     roomId,
-    userId,
+    identifier,
+    identifierType,
     role,
   }: Required<GenerateRoomUserDto>): Promise<RoomUser> {
+    const userId = await this.getValidatedUserId(identifier, identifierType)
     await this.roomUserRepository.update(
       { roomId: roomId, userId: userId },
       { role: role },
@@ -34,8 +60,31 @@ export class RoomUserService {
     return this.findByUserAndRoomId({ roomId, userId });
   }
 
-  generateRoomUser(roomUser: GenerateRoomUserDto): RoomUser {
-    return this.roomUserRepository.create(roomUser);
+  async generateRoomUser(roomUser: GenerateRoomUserDto): Promise<RoomUser> {
+    const { identifier, identifierType, role, roomId } = roomUser;
+    const userId = await this.getValidatedUserId(identifier, identifierType)
+    return this.roomUserRepository.create({ userId, role, roomId });
+  }
+
+  async generateRoomUserList(createRoomUserDtos: CreateRoomUserDto[], roomId?: number): Promise<(RoomUser | null)[]> {
+    const roomUsers = await Promise.all(
+      createRoomUserDtos.map(async (createRoomUser) => {
+          const { identifier, identifierType } = createRoomUser;
+          const userId = await this.userLookupService.getUserIdByIdentifier(
+            identifier,
+            identifierType,
+          );
+          if (!userId) {
+            return null;
+          }
+          return this.roomUserRepository.create({
+            userId: userId,
+            role: createRoomUser.role,
+            roomId: roomId,
+          });
+      }),
+    );
+    return roomUsers;
   }
 
   async deleteUserByFindFunc({
