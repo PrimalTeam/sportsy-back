@@ -61,6 +61,7 @@ export class UserService implements UserLookupService {
         if (isNaN(userId)) {
           return null;
         }
+        return userId;
       case UserIdentifierType.EMAIL:
         user = await this.findByEmail(identifier);
         break;

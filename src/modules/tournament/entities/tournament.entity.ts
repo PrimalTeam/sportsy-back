@@ -58,7 +58,7 @@ export class Tournament {
 
   @Column({
     type: 'json',
-    default: () => '{}',
+    default: '{}',
     transformer: {
       to: (value: Record<string, any>) => JSON.stringify(value),
       from: (value: string) => JSON.parse(value),
