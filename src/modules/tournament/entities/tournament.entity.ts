@@ -1,3 +1,4 @@
+import { IsDate, IsDateString, IsOptional, IsString } from 'class-validator';
 import { Room } from 'src/modules/room/entities/room.entity';
 import {
   Column,
@@ -29,16 +30,22 @@ export enum LeaderTypeEnum {
 
 export class TournamentInfo {
   @Column()
+  @IsString()
   description: string;
 
   @Column()
+  @IsString()
   title: string;
 
   @Column({ default: () => 'CURRENT_TIMESTAMP' })
+  @IsDateString()
+  @IsOptional()
   dateStart?: Date;
 
   @Column()
-  DateEnd?: Date;
+  @IsDateString()
+  @IsOptional()
+  dateEnd?: Date;
 }
 
 @Entity('tournaments')
@@ -61,7 +68,7 @@ export class Tournament {
     default: '{}',
     transformer: {
       to: (value: Record<string, any>) => JSON.stringify(value),
-      from: (value: string) => JSON.parse(value),
+      from: (value: string) => {},
     },
   })
   leader: string;
