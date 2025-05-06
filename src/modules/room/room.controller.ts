@@ -4,9 +4,12 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
+  HttpStatus,
   Param,
   ParseIntPipe,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -50,13 +53,24 @@ export class RoomController {
   @RoomRole(RoomUserRole.ADMIN)
   @UseGuards(JwtGuard, RoomGuard)
   async deleteRoom(@Param('roomId', ParseIntPipe) roomId: number) {
+    if (this.roomService.findRoomById(roomId) === null) {
+      throw new HttpException('Room not found', HttpStatus.NOT_FOUND);
+    }
     return this.roomService.deleteRoomById(roomId);
   }
 
   @Get('/:roomId')
   @RoomRole()
   @UseGuards(JwtGuard, RoomGuard)
-  async getRoom(@Param('roomId', ParseIntPipe) roomId: number) {
-    return this.roomService.findRoomById(roomId);
+  async getRoom(
+    @Query('include') includes: string[] | string,
+    @Param('roomId', ParseIntPipe) roomId: number,
+  ) {
+    includes = Array.isArray(includes) ? includes : [includes];
+    const room = this.roomService.findRoomByIdWithRelations(roomId, includes);
+    if (!room) {
+      throw new HttpException('Room not found', HttpStatus.NOT_FOUND);
+    }
+    return room;
   }
 }
