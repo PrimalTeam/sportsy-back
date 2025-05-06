@@ -24,6 +24,8 @@ export class Room {
   })
   roomUsers: RoomUser[];
 
-  @OneToOne(() => Tournament, (tournament) => tournament.room)
+  @OneToOne(() => Tournament, (tournament) => tournament.room, {
+    cascade: true,
+  })
   tournament: Tournament;
 }
