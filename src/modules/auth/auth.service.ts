@@ -13,7 +13,7 @@ import { RegisterAuthDto } from './dto/registerAuth.dto';
 import { PublicUserDto } from '../user/dto/publicUser.dto';
 import { AccessTokenPayloadCreate } from './models/accessToken';
 import { RefreshTokenPayloadCreate } from './models/refreshToken';
-import { ProvidersNames } from './custom-providers';
+import { ProvidersNames } from '../custom-providers';
 
 @Injectable()
 export class AuthService {
@@ -88,7 +88,7 @@ export class AuthService {
     const { email, password } = credentials;
     const user = await this.userService.findByEmail(email);
     if (user && (await bcrypt.compare(password, user.password))) {
-      const { password, ...result } = user;
+      const { password: _, ...result } = user;
       return result;
     }
     return null;

@@ -1,16 +1,13 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from './entities/user.entity';
+import { User, UserIdentifierType } from './entities/user.entity';
 import { CreateUserDto } from './dto/createUser.dto';
 import { Room } from '../room/entities/room.entity';
 import { RoomUserRole } from '../roomUser/entities/roomUser.entity';
+import { UserLookupService } from './interfaces/userService.interface';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type UserCredentials = {
   email: string;
   password: string;
@@ -22,7 +19,7 @@ type UserUniqueData = {
 };
 
 @Injectable()
-export class UserService {
+export class UserService implements UserLookupService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
@@ -30,11 +27,7 @@ export class UserService {
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const user = this.usersRepository.create(createUserDto);
-    try {
-      return await this.usersRepository.save(user);
-    } catch (error) {
-      throw error;
-    }
+    return await this.usersRepository.save(user);
   }
 
   async findByEmail(email: string): Promise<User | null> {
@@ -47,6 +40,37 @@ export class UserService {
 
   async findOne(id: number): Promise<User | null> {
     return await this.usersRepository.findOne({ where: { id } });
+  }
+
+  async getUserIdByIdentifier(
+    identifier: string,
+    identifierType: UserIdentifierType,
+  ): Promise<number> {
+    let user: User | null = null;
+    switch (identifierType) {
+      case UserIdentifierType.ID: {
+        const userId = Number(identifier);
+        if (isNaN(userId)) {
+          return null;
+        }
+        return userId;
+      }
+      case UserIdentifierType.EMAIL:
+        user = await this.findByEmail(identifier);
+        break;
+      case UserIdentifierType.USERNAME:
+        user = await this.findByUsername(identifier);
+        break;
+      default:
+        throw new HttpException(
+          'Invalid identifier type',
+          HttpStatus.BAD_REQUEST,
+        );
+    }
+    if (!user) {
+      return null;
+    }
+    return user.id;
   }
 
   async getUserRooms(id: number): Promise<(Room & { role: RoomUserRole })[]> {

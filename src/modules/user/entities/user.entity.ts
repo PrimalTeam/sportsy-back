@@ -10,6 +10,12 @@ import * as bcrypt from 'bcrypt';
 import { Exclude } from 'class-transformer';
 import { RoomUser } from 'src/modules/roomUser/entities/roomUser.entity';
 
+export enum UserIdentifierType {
+  USERNAME = 'username',
+  EMAIL = 'email',
+  ID = 'id',
+}
+
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('increment')

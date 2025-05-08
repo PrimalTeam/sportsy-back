@@ -1,5 +1,12 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { RoomUser } from '../../roomUser/entities/roomUser.entity';
+import { Tournament } from 'src/modules/tournament/entities/tournament.entity';
 
 @Entity('rooms')
 export class Room {
@@ -16,4 +23,9 @@ export class Room {
     cascade: true,
   })
   roomUsers: RoomUser[];
+
+  @OneToOne(() => Tournament, (tournament) => tournament.room, {
+    cascade: true,
+  })
+  tournament: Tournament;
 }

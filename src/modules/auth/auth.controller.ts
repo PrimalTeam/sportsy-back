@@ -17,7 +17,7 @@ export class AuthController {
 
   @UseGuards(AuthGuard('local'))
   @Post('login')
-  async login(@UserFromRequest() user: User, @Body() loginDto: LoginAuthDto) {
+  async login(@UserFromRequest() user: User, @Body() _loginDto: LoginAuthDto) {
     return this.authService.generateLoginResponse(user);
   }
 
