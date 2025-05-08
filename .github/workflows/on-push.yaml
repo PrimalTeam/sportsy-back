@@ -1,0 +1,13 @@
+name: Main Branch Merge
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  lint:
+    uses: ./.github/workflows/lint.yml
+
+  deploy:
+    uses: ./.github/workflows/deploy.yml
+    needs: lint
