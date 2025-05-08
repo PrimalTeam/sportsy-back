@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import {
   EntityTarget,
   FindOptionsWhere,
@@ -6,22 +7,20 @@ import {
 } from 'typeorm';
 
 export class TypeOrmUtils {
-  static buildNestedRelations(includes: string[]): Record<string, any> {
-    const relations: Record<string, any> = {};
+  static buildNestedRelations(includes: string[]): Record<string, unknown> {
+    const relations: Record<string, unknown> = {};
     includes = includes.sort((a, b) => b.length - a.length);
 
     for (const include of includes) {
       const parts = include.split('.');
       let current = relations;
-      let previous;
 
       for (let i = 0; i < parts.length; i++) {
         const part = parts[i];
         if (!current[part]) {
           current[part] = i === parts.length - 1 ? true : {};
         }
-        previous = current;
-        current = current[part] as Record<string, any>;
+        current = current[part] as Record<string, unknown>;
       }
     }
 
@@ -58,7 +57,7 @@ export class TypeOrmUtils {
 
   static isValidNestedRelation(
     relationPath: string,
-    rootEntity: Function,
+    _rootEntity: Function,
     allValidRelations: Record<string, Function>,
   ): boolean {
     return relationPath in allValidRelations;

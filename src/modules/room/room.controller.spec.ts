@@ -1,11 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { before, mock } from 'node:test';
 import { Room } from './entities/room.entity';
 import { RoomController } from './room.controller';
 import { RoomService } from './room.service';
 import { AccessTokenPayload } from '../auth/models/accessToken';
 import { CreateRoomDto } from './dto/createRoom.dto';
-import { find } from 'rxjs';
 import { RoomUserService } from '../roomUser/roomUser.service';
 import { CanActivate, INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
@@ -14,18 +12,17 @@ import { RoomUser, RoomUserRole } from '../roomUser/entities/roomUser.entity';
 
 describe('RoomController Test', () => {
   let moduleFixture: TestingModule;
-  let roomService: RoomService;
   let roomController: RoomController;
   let app: INestApplication;
 
-  let mockRoomService = {
+  const mockRoomService = {
     createRoom: jest.fn(),
     findRoomById: jest.fn(),
     deleteRoomById: jest.fn(),
     updateRoomById: jest.fn(),
   };
 
-  let mockRoomUserService = {
+  const mockRoomUserService = {
     findByUserAndRoomId: jest.fn(),
   };
 
@@ -85,6 +82,7 @@ describe('RoomController Test', () => {
       name: roomData.name,
       icon: null,
       roomUsers: [],
+      tournament: null,
     };
 
     mockRoomUserService.findByUserAndRoomId.mockResolvedValue(null);

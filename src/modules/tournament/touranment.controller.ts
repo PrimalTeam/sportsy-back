@@ -11,7 +11,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { TournamentService } from './tournament.service';
-import { Repository } from 'typeorm';
 import { Tournament } from './entities/tournament.entity';
 import { UpdateTournamentDto } from './dto/updateTournament.dto';
 import { JwtGuard } from 'src/guards/auth.guard';

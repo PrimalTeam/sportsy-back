@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { GenericContainer, StartedTestContainer } from 'testcontainers';
 import { RoomModule } from './room.module';
@@ -8,16 +10,13 @@ import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AuthService } from '../auth/auth.service';
 import { CreateUserDto } from '../user/dto/createUser.dto';
-import { AccessTokenPayload } from '../auth/models/accessToken';
 import * as request from 'supertest';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import { CreateRoomDto } from './dto/createRoom.dto';
-import { after, before } from 'node:test';
 import { UserService } from '../user/user.service';
 import { AuthModule } from '../auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { JwtStrategy } from '../auth/strategies/jwt.strategy';
-import { RoomService } from './room.service';
 import { RoomUserService } from '../roomUser/roomUser.service';
 
 const pgConfig = {
@@ -34,7 +33,6 @@ describe('Room Module Test (e2e)', () => {
   let app: INestApplication;
   let roomRepository: Repository<Room>;
   let roomUserRepository: Repository<RoomUser>;
-  let roomService: RoomService;
   let roomUserService: RoomUserService;
 
   const userCreateData: CreateUserDto[] = [
@@ -108,7 +106,6 @@ describe('Room Module Test (e2e)', () => {
     );
 
     const authService = moduleFixture.get<AuthService>(AuthService);
-    roomService = moduleFixture.get<RoomService>(RoomService);
     roomUserService = moduleFixture.get<RoomUserService>(RoomUserService);
 
     await Promise.all(

@@ -7,15 +7,17 @@ import { RoomUserService } from '../roomUser/roomUser.service';
 import { RoomUser, RoomUserRole } from '../roomUser/entities/roomUser.entity';
 import { UserIdentifierType } from '../user/entities/user.entity';
 import { TournamentService } from '../tournament/tournament.service';
-import { TypeOrmUtils } from 'src/utils/typeorm-utils';
+import { BaseService } from 'src/interfaces/baseService';
 
 @Injectable()
-export class RoomService {
+export class RoomService extends BaseService<Room> {
   constructor(
     @InjectRepository(Room) private readonly roomRepository: Repository<Room>,
     private readonly roomUserService: RoomUserService,
     private readonly tournamentService: TournamentService,
-  ) {}
+  ) {
+    super(roomRepository, Room);
+  }
 
   async createRoom(
     createRoomDto: CreateRoomDto,
@@ -56,24 +58,6 @@ export class RoomService {
     return await this.roomRepository.save(room);
   }
 
-  findRoomById(roomId: number): Promise<Room> {
-    return this.roomRepository.findOne({
-      where: { id: roomId },
-    });
-  }
-
-  async findRoomByIdWithRelations(
-    roomId: number,
-    includes: string[] = [],
-  ): Promise<Room | null> {
-    return TypeOrmUtils.getEntityWithRelations(
-      Room,
-      this.roomRepository,
-      roomId,
-      includes,
-    );
-  }
-
   //Not used
   getFullRoomById(roomId: number): Promise<Room | null> {
     return this.roomRepository.findOne({
@@ -85,7 +69,7 @@ export class RoomService {
   }
 
   deleteRoomById(roomId: number) {
-    this.checkRoomExistence(roomId);
+    this.checkEntityExistenceById(roomId);
     return this.roomRepository.delete({ id: roomId });
   }
 
@@ -93,41 +77,29 @@ export class RoomService {
     roomId: number,
     roomData: Partial<CreateRoomDto>,
   ): Promise<Room> {
-    this.checkRoomExistence(roomId);
+    this.checkEntityExistenceById(roomId);
     await this.roomRepository.update({ id: roomId }, roomData);
-    return this.findRoomById(roomId);
+    return this.findById(roomId);
   }
 
   async getUserRooms(userId: number): Promise<Room[] | null> {
     const rooms = await this.roomRepository.find({
       where: { roomUsers: { userId: userId } },
     });
-    this.verifyRoomFind(rooms);
+    this.verifyEntityFind(rooms);
     return rooms;
   }
 
   async getUsersOfRoom(roomId: number): Promise<RoomUser[] | null> {
-    const room = await this.findRoomByIdWithRelations(roomId, [
+    const room = await this.findByIdWithRelations(roomId, [
       'roomUsers.user',
       'tournament.room',
     ]);
-    this.verifyRoomFind(room);
+    this.verifyEntityFind(room);
     return room.roomUsers;
     // return room?.roomUsers.map((roomUser) => {
     //   const { password, ...user } = roomUser.user;
     //   return { ...user, role: roomUser.role };
     // });
-  }
-
-  verifyRoomFind(room: Room | null | Room[]): void {
-    if (!room) {
-      throw new HttpException('Room not found', HttpStatus.NOT_FOUND);
-    }
-  }
-
-  async checkRoomExistence(roomId: number): Promise<Room> {
-    const room = await this.roomRepository.findOne({ where: { id: roomId } });
-    this.verifyRoomFind(room);
-    return room;
   }
 }

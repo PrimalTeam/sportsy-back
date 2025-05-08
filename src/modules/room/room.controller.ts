@@ -4,8 +4,6 @@ import {
   Controller,
   Delete,
   Get,
-  HttpException,
-  HttpStatus,
   Param,
   ParseIntPipe,
   Post,
@@ -53,9 +51,7 @@ export class RoomController {
   @RoomRole(RoomUserRole.ADMIN)
   @UseGuards(JwtGuard, RoomGuard)
   async deleteRoom(@Param('roomId', ParseIntPipe) roomId: number) {
-    if (this.roomService.findRoomById(roomId) === null) {
-      throw new HttpException('Room not found', HttpStatus.NOT_FOUND);
-    }
+    this.roomService.checkEntityExistenceById(roomId);
     return this.roomService.deleteRoomById(roomId);
   }
 
@@ -67,11 +63,8 @@ export class RoomController {
     @Param('roomId', ParseIntPipe) roomId: number,
   ) {
     includes = Array.isArray(includes) ? includes : [includes];
-    const room = await this.roomService.findRoomByIdWithRelations(
-      roomId,
-      includes,
-    );
-    this.roomService.verifyRoomFind(room);
+    const room = await this.roomService.findByIdWithRelations(roomId, includes);
+    this.roomService.verifyEntityFind(room);
     return room;
   }
 }

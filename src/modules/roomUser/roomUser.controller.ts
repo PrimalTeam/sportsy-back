@@ -10,10 +10,8 @@ import {
 import { RoomUserService } from './roomUser.service';
 import { JwtGuard } from 'src/guards/auth.guard';
 import { RoomGuard } from 'src/guards/room.guard';
-import { Room } from '../room/entities/room.entity';
 import { RoomRole } from 'src/decorators/roomRole.decorator';
 import { RoomUserRole } from './entities/roomUser.entity';
-import { create } from 'domain';
 import { CreateRoomUserDto } from './dto/createRoomUser.dto';
 
 @Controller('roomUser')

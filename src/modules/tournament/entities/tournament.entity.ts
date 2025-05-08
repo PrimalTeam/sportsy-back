@@ -1,4 +1,4 @@
-import { IsDate, IsDateString, IsOptional, IsString } from 'class-validator';
+import { IsDateString, IsOptional, IsString } from 'class-validator';
 import { Room } from 'src/modules/room/entities/room.entity';
 import {
   Column,
@@ -67,8 +67,8 @@ export class Tournament {
     type: 'json',
     default: '{}',
     transformer: {
-      to: (value: Record<string, any>) => JSON.stringify(value),
-      from: (value: string) => {},
+      to: (value: Record<string, unknown>) => JSON.stringify(value),
+      from: (_value: string) => {},
     },
   })
   leader: string;
@@ -108,7 +108,7 @@ const leader = {
   ],
 };
 
-const leaderPayload = {
+const _leaderPayload = {
   leader: leader,
   typeOfLeader: LeaderTypeEnum.SINGLE_ELIMINATION,
 };
