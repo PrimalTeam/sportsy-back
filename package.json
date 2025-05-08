@@ -8,8 +8,8 @@
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\" --log-level debug",
-    "format:test": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" | git diff --exit-code",
+    "format:check1": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\" --log-level debug",
+    "format:check": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" | git diff --exit-code",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
