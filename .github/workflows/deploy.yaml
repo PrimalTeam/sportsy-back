@@ -1,11 +1,11 @@
-name: Deploy to GCP_VM
+name: Deploy job
 
 on:
-  push:
-    branches:
-      - main
+  workflow_call:
+    
 
 jobs:
+
   deploy:
     runs-on: ubuntu-latest
 
