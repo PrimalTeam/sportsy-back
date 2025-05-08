@@ -6,8 +6,8 @@ on:
 
 jobs:
   lint:
-    uses: ./.github/workflows/lint.yaml
+    uses: ./.github/workflows/lint.yml
 
   deploy:
-    uses: ./.github/workflows/deploy.yaml
+    uses: ./.github/workflows/deploy.yml
     needs: lint
