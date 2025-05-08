@@ -11,3 +11,7 @@ jobs:
   deploy:
     uses: ./.github/workflows/deploy.yml
     needs: lint
+    secrets:
+      SPOR_VM_SSH_KEY: ${{ secrets.SPOR_VM_SSH_KEY }}
+      SPOR_VM_USER: ${{ secrets.SPOR_VM_USER }}
+      SPOR_VM_IP: ${{ secrets.SPOR_VM_IP }}

@@ -2,6 +2,13 @@ name: Deploy job
 
 on:
   workflow_call:
+    secrets:
+      SPOR_VM_SSH_KEY:
+        required: true
+      SPOR_VM_USER:
+        required: true
+      SPOR_VM_IP:
+        required: true
     
 
 jobs:
