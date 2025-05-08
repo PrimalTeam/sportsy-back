@@ -67,10 +67,11 @@ export class RoomController {
     @Param('roomId', ParseIntPipe) roomId: number,
   ) {
     includes = Array.isArray(includes) ? includes : [includes];
-    const room = this.roomService.findRoomByIdWithRelations(roomId, includes);
-    if (!room) {
-      throw new HttpException('Room not found', HttpStatus.NOT_FOUND);
-    }
+    const room = await this.roomService.findRoomByIdWithRelations(
+      roomId,
+      includes,
+    );
+    this.roomService.verifyRoomFind(room);
     return room;
   }
 }

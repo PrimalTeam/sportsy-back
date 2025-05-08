@@ -1,13 +1,17 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { RoomUser } from '../roomUser/entities/roomUser.entity';
-import { Tournament } from './entities/tournament.entity';
+import {
+  LeaderTypeEnum,
+  Tournament,
+  TournamentSportTypeEnum,
+} from './entities/tournament.entity';
 import { DeepPartial, Repository } from 'typeorm';
 import {
   CreateTournamentDto,
   GenerateTournamentDto,
 } from './dto/createTournament.dto';
 import { UpdateTournamentDto } from './dto/updateTournament.dto';
+import { TypeOrmUtils } from 'src/utils/typeorm-utils';
 
 @Injectable()
 export class TournamentService {
@@ -47,6 +51,15 @@ export class TournamentService {
     });
   }
 
+  findByIdWithRelations(touranmentId: number, includes: string[] = []) {
+    return TypeOrmUtils.getEntityWithRelations(
+      Tournament,
+      this.tournamentRepository,
+      touranmentId,
+      includes,
+    );
+  }
+
   async updateTournament(
     updateTournamentDto: UpdateTournamentDto,
     tournamentId: number,
@@ -63,7 +76,7 @@ export class TournamentService {
       ...updateTournamentDto,
     };
 
-    const tournament = await this.tournamentRepository.update(
+    await this.tournamentRepository.update(
       {
         id: tournamentId,
       },
@@ -81,5 +94,27 @@ export class TournamentService {
       throw new HttpException('Tournament not found', 404);
     }
     await this.tournamentRepository.delete(tournamentId);
+  }
+
+  getTournamentSportTypes(): string[] {
+    return Object.values(TournamentSportTypeEnum);
+  }
+
+  getLeaderTypes(): string[] {
+    return Object.values(LeaderTypeEnum);
+  }
+
+  verifyTournamentFind(tournament: Tournament | Tournament[] | null): void {
+    if (!tournament) {
+      throw new HttpException('Tournament not found', HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async checkRoomExistence(id: number): Promise<Tournament> {
+    const tournament = await this.tournamentRepository.findOne({
+      where: { id },
+    });
+    this.verifyTournamentFind(tournament);
+    return tournament;
   }
 }

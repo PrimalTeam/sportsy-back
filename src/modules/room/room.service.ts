@@ -1,13 +1,13 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Room } from './entities/room.entity';
-import { getMetadataArgsStorage, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CreateRoomDto } from './dto/createRoom.dto';
 import { RoomUserService } from '../roomUser/roomUser.service';
-import { RoomUserRole } from '../roomUser/entities/roomUser.entity';
-import { User, UserIdentifierType } from '../user/entities/user.entity';
+import { RoomUser, RoomUserRole } from '../roomUser/entities/roomUser.entity';
+import { UserIdentifierType } from '../user/entities/user.entity';
 import { TournamentService } from '../tournament/tournament.service';
-import { GenerateTournamentDto } from '../tournament/dto/createTournament.dto';
+import { TypeOrmUtils } from 'src/utils/typeorm-utils';
 
 @Injectable()
 export class RoomService {
@@ -27,9 +27,12 @@ export class RoomService {
     if (roomUsers && roomUsers.length > 0) {
       const newRoomUsers =
         await this.roomUserService.generateRoomUserList(roomUsers);
-      if (roomUsers.some((roomUser) => roomUser === null))
+      if (newRoomUsers.some((roomUser) => roomUser === null))
         throw new HttpException(
-          'User for adding to the room not found',
+          {
+            message: 'User for adding to the room not found',
+            roomUser: roomUsers.filter((_, ind) => newRoomUsers[ind] === null),
+          },
           HttpStatus.BAD_REQUEST,
         );
       else room.roomUsers.push(...newRoomUsers);
@@ -59,23 +62,19 @@ export class RoomService {
     });
   }
 
-  findRoomByIdWithRelations(
+  async findRoomByIdWithRelations(
     roomId: number,
     includes: string[] = [],
-  ): Promise<Room> {
-    const validFields = getMetadataArgsStorage()
-      .relations.filter((column) => column.target == Room)
-      .map((column) => column.propertyName);
-    const selectedIncludes = includes.filter((include) =>
-      validFields.includes(include),
+  ): Promise<Room | null> {
+    return TypeOrmUtils.getEntityWithRelations(
+      Room,
+      this.roomRepository,
+      roomId,
+      includes,
     );
-
-    return this.roomRepository.findOne({
-      where: { id: roomId },
-      relations: selectedIncludes.length > 0 ? selectedIncludes : undefined,
-    });
   }
 
+  //Not used
   getFullRoomById(roomId: number): Promise<Room | null> {
     return this.roomRepository.findOne({
       where: { id: roomId },
@@ -86,10 +85,15 @@ export class RoomService {
   }
 
   deleteRoomById(roomId: number) {
+    this.checkRoomExistence(roomId);
     return this.roomRepository.delete({ id: roomId });
   }
 
-  async updateRoomById(roomId: number, roomData: Partial<CreateRoomDto>) {
+  async updateRoomById(
+    roomId: number,
+    roomData: Partial<CreateRoomDto>,
+  ): Promise<Room> {
+    this.checkRoomExistence(roomId);
     await this.roomRepository.update({ id: roomId }, roomData);
     return this.findRoomById(roomId);
   }
@@ -98,11 +102,32 @@ export class RoomService {
     const rooms = await this.roomRepository.find({
       where: { roomUsers: { userId: userId } },
     });
+    this.verifyRoomFind(rooms);
     return rooms;
   }
 
-  async getUsersOfRoom(roomId: number): Promise<User[] | null> {
-    const room = await this.getFullRoomById(roomId);
-    return room?.roomUsers.map((roomUser) => roomUser.user);
+  async getUsersOfRoom(roomId: number): Promise<RoomUser[] | null> {
+    const room = await this.findRoomByIdWithRelations(roomId, [
+      'roomUsers.user',
+      'tournament.room',
+    ]);
+    this.verifyRoomFind(room);
+    return room.roomUsers;
+    // return room?.roomUsers.map((roomUser) => {
+    //   const { password, ...user } = roomUser.user;
+    //   return { ...user, role: roomUser.role };
+    // });
+  }
+
+  verifyRoomFind(room: Room | null | Room[]): void {
+    if (!room) {
+      throw new HttpException('Room not found', HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async checkRoomExistence(roomId: number): Promise<Room> {
+    const room = await this.roomRepository.findOne({ where: { id: roomId } });
+    this.verifyRoomFind(room);
+    return room;
   }
 }

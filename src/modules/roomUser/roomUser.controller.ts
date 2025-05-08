@@ -20,6 +20,11 @@ import { CreateRoomUserDto } from './dto/createRoomUser.dto';
 export class RoomUserController {
   constructor(private readonly roomUserService: RoomUserService) {}
 
+  @Get('roles')
+  async getRoomUserRoles() {
+    return this.roomUserService.getRoomUserRoles();
+  }
+
   @Post('addUser/:roomId')
   @UseGuards(JwtGuard, RoomGuard)
   @RoomRole(RoomUserRole.ADMIN)
