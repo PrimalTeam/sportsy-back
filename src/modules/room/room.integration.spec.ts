@@ -1,18 +1,16 @@
 import { GenericContainer, StartedTestContainer } from 'testcontainers';
 import { RoomService } from './room.service';
 import { RoomUserService } from '../roomUser/roomUser.service';
-import { Connection, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Room } from './entities/room.entity';
 import { RoomUser, RoomUserRole } from '../roomUser/entities/roomUser.entity';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken, TypeOrmModule } from '@nestjs/typeorm';
-import { after } from 'node:test';
 import { CreateRoomDto } from './dto/createRoom.dto';
 import { CreateRoomUserDto } from '../roomUser/dto/createRoomUser.dto';
 import { User } from '../user/entities/user.entity';
 
 let pgContainer: StartedTestContainer;
-let connection: Connection;
 
 describe('Room Services Integration Test', () => {
   let roomService: RoomService;

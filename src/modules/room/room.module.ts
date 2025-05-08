@@ -6,12 +6,14 @@ import { Room } from './entities/room.entity';
 import { RoomUser } from '../roomUser/entities/roomUser.entity';
 import { RoomAuthModule } from '../roomAuth/roomAuth.module';
 import { RoomUserModule } from '../roomUser/roomUser.module';
+import { TouranmentModule } from '../tournament/tournament.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Room, RoomUser]),
     RoomAuthModule,
     RoomUserModule,
+    TouranmentModule,
   ],
   controllers: [RoomController],
   providers: [RoomService],

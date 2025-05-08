@@ -5,7 +5,9 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -41,21 +43,28 @@ export class RoomController {
   @Get('users/:roomId')
   @RoomRole()
   @UseGuards(JwtGuard, RoomGuard)
-  async getUsersOfRoom(@Param('roomId') roomId: number) {
+  async getUsersOfRoom(@Param('roomId', ParseIntPipe) roomId: number) {
     return this.roomService.getUsersOfRoom(roomId);
   }
 
   @Delete('/:roomId')
   @RoomRole(RoomUserRole.ADMIN)
   @UseGuards(JwtGuard, RoomGuard)
-  async deleteRoom(@Param('roomId') roomId: number) {
+  async deleteRoom(@Param('roomId', ParseIntPipe) roomId: number) {
+    this.roomService.checkEntityExistenceById(roomId);
     return this.roomService.deleteRoomById(roomId);
   }
 
   @Get('/:roomId')
   @RoomRole()
   @UseGuards(JwtGuard, RoomGuard)
-  async getRoom(@Param('roomId') roomId: number) {
-    return this.roomService.findRoomById(roomId);
+  async getRoom(
+    @Query('include') includes: string[] | string,
+    @Param('roomId', ParseIntPipe) roomId: number,
+  ) {
+    includes = Array.isArray(includes) ? includes : [includes];
+    const room = await this.roomService.findByIdWithRelations(roomId, includes);
+    this.roomService.verifyEntityFind(room);
+    return room;
   }
 }

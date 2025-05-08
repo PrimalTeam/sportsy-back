@@ -3,8 +3,8 @@ import { AuthService } from './auth.service';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { UserModule } from '../user/user.module';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ProvidersNames } from './custom-providers';
+import { ConfigService } from '@nestjs/config';
+import { ProvidersNames } from '../custom-providers';
 
 @Module({
   imports: [UserModule, JwtModule.register({})],
@@ -12,7 +12,7 @@ import { ProvidersNames } from './custom-providers';
     AuthService,
     {
       provide: ProvidersNames.ACCESS_TOKEN_SERVICE,
-      useFactory: (jwtService: JwtService, configService: ConfigService) =>
+      useFactory: (_jwtService: JwtService, configService: ConfigService) =>
         new JwtService({
           secret: configService.get<string>('ACCESS_JWT_SECRET'),
           signOptions: {
@@ -23,7 +23,7 @@ import { ProvidersNames } from './custom-providers';
     },
     {
       provide: ProvidersNames.REFRESH_TOKEN_SERVICE,
-      useFactory: (jwtService: JwtService, configService: ConfigService) =>
+      useFactory: (_jwtService: JwtService, configService: ConfigService) =>
         new JwtService({
           secret: configService.get<string>('REFRESH_JWT_SECRET'),
           signOptions: {
