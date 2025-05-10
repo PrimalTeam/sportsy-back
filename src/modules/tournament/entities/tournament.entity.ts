@@ -1,9 +1,11 @@
 import { IsDateString, IsOptional, IsString } from 'class-validator';
 import { Room } from 'src/modules/room/entities/room.entity';
+import { Team } from 'src/modules/team/entities/team.entity';
 import {
   Column,
   Entity,
   JoinColumn,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -86,6 +88,9 @@ export class Tournament {
 
   @Column()
   roomId: number;
+
+  @OneToMany(() => Team, (team) => team.tournament, { cascade: true })
+  teams: Team[];
 }
 
 const leader = {
