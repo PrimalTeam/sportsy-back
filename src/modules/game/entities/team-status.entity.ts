@@ -1,11 +1,4 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  JoinColumn,
-} from 'typeorm';
-import { Game } from '../../game/entities/game.entity';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity()
 export class TeamStatus {
@@ -16,9 +9,9 @@ export class TeamStatus {
   //   @JoinColumn({ name: 'teamId' })
   //   team: Team;
 
-  @ManyToOne(() => Game, (game) => game.teamStatuses)
-  @JoinColumn({ name: 'gameId' })
-  game: Game;
+  // @ManyToOne(() => Game, (game) => game.teamStatuses)
+  // @JoinColumn({ name: 'gameId' })
+  // game: Game;
 
   @Column({ type: 'float' })
   score: number;
