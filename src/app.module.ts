@@ -29,7 +29,7 @@ import { GameModule } from './modules/game/game.module';
           username: configService.get<string>('POSTGRES_USER'),
           password: configService.get<string>('POSTGRES_PASSWORD'),
           database: configService.get<string>('POSTGRES_DB'),
-          entities: [User],
+          entities: [User, Game],
           synchronize: true,
           dropSchema:
             configService.get<string>('NODE_ENV') == 'development'

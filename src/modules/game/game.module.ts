@@ -6,9 +6,7 @@ import { GameController } from './game.controller';
 import { GameService } from './game.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Game, TeamStatus]),
-  ],
+  imports: [TypeOrmModule.forFeature([Game, TeamStatus])],
   controllers: [GameController],
   providers: [GameService],
   exports: [GameService],

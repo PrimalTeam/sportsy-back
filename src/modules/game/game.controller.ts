@@ -1,15 +1,22 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { UpdateGameDto } from './dto/update-game.dto';
 import { CreateGameDto } from './dto/create-game.dto';
 import { GameService } from './game.service';
 import { JwtGuard } from 'src/guards/auth.guard';
 
-
 @Controller('game')
 export class GameController {
   constructor(private readonly gameService: GameService) {}
 
-    
   @UseGuards(JwtGuard)
   @Post()
   create(@Body() createGameDto: CreateGameDto) {
@@ -27,7 +34,6 @@ export class GameController {
   findByTournamentId(@Param('tournamentId') tournamentId: string) {
     return this.gameService.findByTournamentId(+tournamentId);
   }
-
 
   @UseGuards(JwtGuard)
   @Patch(':id')

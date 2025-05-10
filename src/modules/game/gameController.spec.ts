@@ -17,9 +17,9 @@ describe('GameController (Integration with AppModule)', () => {
   let createdGameId: number | undefined;
   const initialStatus = GameStatusEnum.PENDING;
   const initialDateStart = Date.now();
-  const initialDuration = "01:00:00";
+  const initialDuration = '01:00:00';
   const updatedStatus = GameStatusEnum.IN_PROGRESS;
-  const updatedDuration = "01:30:00";
+  const updatedDuration = '01:30:00';
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -27,18 +27,21 @@ describe('GameController (Integration with AppModule)', () => {
     app = moduleFixture.createNestApplication();
     await app.init();
     gameController = moduleFixture.get<GameController>(GameController);
-    gameRepository = moduleFixture.get<Repository<Game>>(getRepositoryToken(Game));
+    gameRepository = moduleFixture.get<Repository<Game>>(
+      getRepositoryToken(Game),
+    );
   });
   afterAll(async () => {
     if (createdGameId) {
       try {
         await gameRepository.delete(createdGameId);
-      } catch (error) {
+      } catch (_error) {
+        /* empty */
       }
     }
     await app.close();
   });
- 
+
   describe('create', () => {
     it('should create a new game in the database using CreateGameDto', async () => {
       const createGameDto: CreateGameDto = {
@@ -72,14 +75,13 @@ describe('GameController (Integration with AppModule)', () => {
       expect(result!.durationTime).toEqual(initialDuration);
     });
     it('should return null or throw error for a non-existent ID', async () => {
-       const nonExistentId = '999999';
-       try {
-           const result = await gameController.findOne(nonExistentId);
-           expect(result).toBeNull();
-       } catch (error) {
-         
-           expect(error.status).toEqual(404);
-       }
+      const nonExistentId = '999999';
+      try {
+        const result = await gameController.findOne(nonExistentId);
+        expect(result).toBeNull();
+      } catch (error) {
+        expect(error.status).toEqual(404);
+      }
     });
   });
   describe('update', () => {
@@ -88,7 +90,6 @@ describe('GameController (Integration with AppModule)', () => {
       const updateGameDto: UpdateGameDto = {
         status: updatedStatus,
         durationTime: updatedDuration,
-      
       };
       const result = await gameController.update(
         createdGameId!.toString(),
@@ -114,14 +115,13 @@ describe('GameController (Integration with AppModule)', () => {
       expect(dbGame).toBeNull();
       createdGameId = undefined;
     });
-     it('should handle removing a non-existent game gracefully', async () => {
-        const nonExistentId = '999998';
-        try {
-            const result = await gameController.remove(nonExistentId);
-        } catch (error) {
-            
-             expect(error.status).toEqual(404);
-        }
-     });
+    it('should handle removing a non-existent game gracefully', async () => {
+      const nonExistentId = '999998';
+      try {
+        const _result = await gameController.remove(nonExistentId);
+      } catch (error) {
+        expect(error.status).toEqual(404);
+      }
+    });
   });
 });

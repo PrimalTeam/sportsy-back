@@ -1,14 +1,10 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/createUser.dto';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type UserCredentials = {
   email: string;
   password: string;
@@ -28,11 +24,7 @@ export class UserService {
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const user = this.usersRepository.create(createUserDto);
-    try {
-      return await this.usersRepository.save(user);
-    } catch (error) {
-      throw error;
-    }
+    return await this.usersRepository.save(user);
   }
 
   async findByEmail(email: string): Promise<User | null> {

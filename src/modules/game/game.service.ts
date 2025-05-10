@@ -21,11 +21,15 @@ export class GameService {
     game.gameActions = createGameDto.gameActions || [];
 
     if (createGameDto.tournamentId) {
-        const tournament = await this.tournamentRepository.findOneBy({ id: createGameDto.tournamentId });
-        if (!tournament) {
-             throw new NotFoundException(`Tournament with ID ${createGameDto.tournamentId} not found`);
-        }
-        game.tournament = tournament;
+      const tournament = await this.tournamentRepository.findOneBy({
+        id: createGameDto.tournamentId,
+      });
+      if (!tournament) {
+        throw new NotFoundException(
+          `Tournament with ID ${createGameDto.tournamentId} not found`,
+        );
+      }
+      game.tournament = tournament;
     }
 
     return this.gameRepository.save(game);
@@ -46,24 +50,30 @@ export class GameService {
     if (updateGameDto.dateStart !== undefined) {
       game.dateStart = new Date(updateGameDto.dateStart);
     }
-     if (updateGameDto.tournamentId !== undefined) {
-        if (updateGameDto.tournamentId === null) {
-            game.tournament = null;
-        } else {
-            const tournament = await this.tournamentRepository.findOneBy({ id: updateGameDto.tournamentId });
-            if (!tournament) {
-                 throw new NotFoundException(`Tournament with ID ${updateGameDto.tournamentId} not found`);
-            }
-            game.tournament = tournament;
+    if (updateGameDto.tournamentId !== undefined) {
+      if (updateGameDto.tournamentId === null) {
+        game.tournament = null;
+      } else {
+        const tournament = await this.tournamentRepository.findOneBy({
+          id: updateGameDto.tournamentId,
+        });
+        if (!tournament) {
+          throw new NotFoundException(
+            `Tournament with ID ${updateGameDto.tournamentId} not found`,
+          );
         }
+        game.tournament = tournament;
+      }
     }
 
     return this.gameRepository.save(game);
   }
 
-
   findByTournamentId(tournamentId: number) {
-    return this.gameRepository.find({ where: { tournament: { id: tournamentId } }, relations: ['tournament'] });
+    return this.gameRepository.find({
+      where: { tournament: { id: tournamentId } },
+      relations: ['tournament'],
+    });
   }
 
   remove(id: number) {

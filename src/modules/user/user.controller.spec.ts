@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
@@ -51,7 +52,7 @@ describe('UserController (e2e)', () => {
   });
 
   describe('/user/profile/:username (GET)', () => {
-    let testUser: Object;
+    let testUser: object;
     let token: string;
 
     beforeAll(async () => {
@@ -69,19 +70,18 @@ describe('UserController (e2e)', () => {
     });
 
     it('powinien zwrócić dane profilowe użytkownika z tokenem JWT', async () => {
-      
       const response = await request(app.getHttpServer())
         .get(`/user/profile/testUser`)
         .set('Authorization', `Bearer ${token}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('username', testUser["username"]);
-      expect(response.body).toHaveProperty('email', testUser["email"]);
+      expect(response.body).toHaveProperty('username', testUser['username']);
+      expect(response.body).toHaveProperty('email', testUser['email']);
     });
 
     it('powinien zwrócić błąd 401 bez tokena JWT', async () => {
       await request(app.getHttpServer())
-        .get(`/user/profile/${testUser["username"]}`)
+        .get(`/user/profile/${testUser['username']}`)
         .expect(401);
     });
 

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
@@ -31,15 +32,12 @@ describe('AuthController ', () => {
         //   synchronize: true,
         //   dropSchema: true,
         // }),
-        
       ],
       //controllers: [AuthController],
-      
     }).compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
-
   });
 
   afterAll(async () => {
@@ -52,10 +50,13 @@ describe('AuthController ', () => {
         let authService: AuthService;
         authService = app.get<AuthService>(AuthService);
 
-        const registerDto = { email: 'testUser@wp.pl', username: "testUser", password: 'testPass' };
+        const registerDto = {
+          email: 'testUser@wp.pl',
+          username: 'testUser',
+          password: 'testPass',
+        };
         await authService.register(registerDto);
-      } catch (error) { }
-
+      } catch (error) {}
     });
 
     it('powinien zwrócić token JWT po poprawnym zalogowaniu', async () => {
@@ -71,7 +72,10 @@ describe('AuthController ', () => {
     });
 
     it('powinien zwrócić błąd 401 dla niepoprawnych danych logowania', async () => {
-      const loginDto = { email: 'invalidUser@wp.pl', password: 'invalidPassword' };
+      const loginDto = {
+        email: 'invalidUser@wp.pl',
+        password: 'invalidPassword',
+      };
 
       await request(app.getHttpServer())
         .post('/auth/login')
@@ -85,7 +89,7 @@ describe('AuthController ', () => {
       const registerDto = {
         username: 'newUser',
         email: 'new@user.com',
-        password: 'newPassword'
+        password: 'newPassword',
       };
 
       const response = await request(app.getHttpServer())
@@ -102,7 +106,7 @@ describe('AuthController ', () => {
       const registerDto = {
         username: 'newUser',
         email: 'new@user.com',
-        password: 'anotherPassword'
+        password: 'anotherPassword',
       };
 
       await request(app.getHttpServer())
@@ -114,11 +118,9 @@ describe('AuthController ', () => {
 
   describe('/auth/logout (POST)', () => {
     it('powinien wylogować użytkownika (jeśli logout coś zwraca)', async () => {
-
       const response = await request(app.getHttpServer())
         .post('/auth/logout')
         .expect(201);
-
 
       expect(response.body).toBeDefined();
     });
