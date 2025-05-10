@@ -13,7 +13,7 @@ import { RegisterAuthDto } from './dto/registerAuth.dto';
 import { PublicUserDto } from '../user/dto/publicUser.dto';
 import { AccessTokenPayloadCreate } from './models/accessToken';
 import { RefreshTokenPayloadCreate } from './models/refreshToken';
-import { ProvidersNames } from './custom-providers';
+import { ProvidersNames } from '../custom-providers';
 
 @Injectable()
 export class AuthService {

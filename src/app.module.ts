@@ -10,6 +10,10 @@ import { JwtStrategy } from './modules/auth/strategies/jwt.strategy';
 import { LocalStrategy } from './modules/auth/strategies/local.strategy';
 import { Game } from './modules/game/entities/game.entity';
 import { GameModule } from './modules/game/game.module';
+import { Room } from './modules/room/entities/room.entity';
+import { RoomModule } from './modules/room/room.module';
+import { RoomUser } from './modules/roomUser/entities/roomUser.entity';
+import { Tournament } from './modules/tournament/entities/tournament.entity';
 
 @Module({
   imports: [
@@ -17,6 +21,7 @@ import { GameModule } from './modules/game/game.module';
       isGlobal: true,
     }),
     UserModule,
+    RoomModule,
     AuthModule,
     GameModule,
     TypeOrmModule.forRootAsync({
@@ -29,11 +34,11 @@ import { GameModule } from './modules/game/game.module';
           username: configService.get<string>('POSTGRES_USER'),
           password: configService.get<string>('POSTGRES_PASSWORD'),
           database: configService.get<string>('POSTGRES_DB'),
-          entities: [User, Game],
+          entities: [User, Room, RoomUser, Tournament, Game],
           synchronize: true,
           dropSchema:
             configService.get<string>('NODE_ENV') == 'development'
-              ? true
+              ? false
               : false,
         };
       },
