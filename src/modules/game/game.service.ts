@@ -4,12 +4,15 @@ import { Repository } from 'typeorm';
 import { CreateGameDto } from './dto/create-game.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
 import { Game } from './entities/game.entity';
+import { Tournament } from '../tournament/entities/tournament.entity';
 
 @Injectable()
 export class GameService {
   constructor(
     @InjectRepository(Game)
     private gameRepository: Repository<Game>,
+    @InjectRepository(Tournament)
+    private readonly tournamentRepository: Repository<Tournament>,
   ) {}
 
   async create(createGameDto: CreateGameDto) {
@@ -29,7 +32,7 @@ export class GameService {
           `Tournament with ID ${createGameDto.tournamentId} not found`,
         );
       }
-      game.tournament = tournament;
+      // game.tournament = tournament;
     }
 
     return this.gameRepository.save(game);
@@ -52,7 +55,7 @@ export class GameService {
     }
     if (updateGameDto.tournamentId !== undefined) {
       if (updateGameDto.tournamentId === null) {
-        game.tournament = null;
+        // game.tournament = null;
       } else {
         const tournament = await this.tournamentRepository.findOneBy({
           id: updateGameDto.tournamentId,
@@ -62,19 +65,19 @@ export class GameService {
             `Tournament with ID ${updateGameDto.tournamentId} not found`,
           );
         }
-        game.tournament = tournament;
+        // game.tournament = tournament;
       }
     }
 
     return this.gameRepository.save(game);
   }
 
-  findByTournamentId(tournamentId: number) {
-    return this.gameRepository.find({
-      where: { tournament: { id: tournamentId } },
-      relations: ['tournament'],
-    });
-  }
+  // findByTournamentId(tournamentId: number) {
+  //   return this.gameRepository.find({
+  //     where: { tournament: { id: tournamentId } },
+  //     relations: ['tournament'],
+  //   });
+  // }
 
   remove(id: number) {
     return this.gameRepository.delete(id);

@@ -29,11 +29,11 @@ export class GameController {
     return this.gameService.findOne(+id);
   }
 
-  @UseGuards(JwtGuard)
-  @Get('by-tournament/:tournamentId')
-  findByTournamentId(@Param('tournamentId') tournamentId: string) {
-    return this.gameService.findByTournamentId(+tournamentId);
-  }
+  // @UseGuards(JwtGuard)
+  // @Get('by-tournament/:tournamentId')
+  // findByTournamentId(@Param('tournamentId') tournamentId: string) {
+  //   return this.gameService.findByTournamentId(+tournamentId);
+  // }
 
   @UseGuards(JwtGuard)
   @Patch(':id')
