@@ -27,6 +27,13 @@ export class TeamController {
   constructor(private readonly teamService: TeamService) {}
 
   @UseGuards(JwtGuard, RoomGuard)
+  @RoomRole()
+  @Get('getByTournament/:roomId')
+  getByTournament(@RoomFromRequest() room: Room) {
+    return this.teamService.findTournamentTeams(room.tournament.id);
+  }
+
+  @UseGuards(JwtGuard, RoomGuard)
   @RoomRole(RoomUserRole.ADMIN)
   @Post(':roomId/')
   create(@RoomFromRequest() room: Room, @Body() createTeamDto: CreateTeamDto) {
@@ -36,12 +43,14 @@ export class TeamController {
   @UseGuards(JwtGuard, RoomGuard)
   @RoomRole()
   @Get(':roomId/:teamId')
-  getTeam(
+  async getTeam(
     @Param('teamId', ParseIntPipe) teamId: number,
     @Query('include') include: string | string[],
   ) {
     include = Array.isArray(include) ? include : [include];
-    return this.teamService.findByIdWithRelations(teamId, include);
+    const team = await this.teamService.findByIdWithRelations(teamId, include);
+    this.teamService.verifyEntityFind(team);
+    return team;
   }
 
   @UseGuards(JwtGuard, RoomGuard)

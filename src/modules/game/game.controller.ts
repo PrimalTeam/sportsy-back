@@ -26,12 +26,11 @@ import { Room } from '../room/entities/room.entity';
 export class GameController {
   constructor(private readonly gameService: GameService) {}
 
-  @UseGuards(JwtGuard)
-  @Get('getByTournament/:tournamentId')
-  findByTournamentId(
-    @Param('tournamentId', ParseIntPipe) tournamentId: number,
-  ) {
-    return this.gameService.findByTournamentId(tournamentId);
+  @UseGuards(JwtGuard, RoomGuard)
+  @RoomRole()
+  @Get('getByTournament/:roomId')
+  findByTournamentId(@RoomFromRequest() room: Room) {
+    return this.gameService.findByTournamentId(room.tournament.id);
   }
 
   @UseGuards(JwtGuard, RoomGuard)
@@ -57,12 +56,14 @@ export class GameController {
   @UseGuards(JwtGuard, RoomGuard)
   @RoomRole()
   @Get(':roomId/:id')
-  getGameWithIncludes(
+  async getGameWithIncludes(
     @Param('id', ParseIntPipe) id: number,
     @Query('include') include: string[] | string,
   ) {
     include = Array.isArray(include) ? include : [include];
-    return this.gameService.findByIdWithRelations(id, include);
+    const game = await this.gameService.findByIdWithRelations(id, include);
+    this.gameService.verifyEntityFind(game);
+    return game;
   }
 
   @UseGuards(JwtGuard, RoomGuard)

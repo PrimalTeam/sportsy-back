@@ -5,10 +5,7 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
 @Entity('teamStatuses')
 export class TeamStatus extends BaseEntity {
-  @Column('bytea', { nullable: true })
-  icon?: Buffer;
-
-  @Column({ type: 'float' })
+  @Column({ type: 'float', default: 0 })
   score: number;
 
   @Column()

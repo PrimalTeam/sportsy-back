@@ -43,7 +43,7 @@ export class TeamService extends BaseService<Team> {
     return this.teamRepository.find({ where: { tournamentId } });
   }
 
-  private async checkTeamRelation(teamId: number, touranmentId: number) {
+  async checkTeamRelation(teamId: number, touranmentId: number) {
     const team = await this.teamRepository.findOne({
       where: { id: teamId, tournamentId: touranmentId },
     });

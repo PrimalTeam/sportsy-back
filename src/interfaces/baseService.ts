@@ -22,7 +22,10 @@ export abstract class BaseService<T extends BaseEntity>
 
   verifyEntityFind(entity: T | T[] | null): void {
     if (!entity) {
-      throw new HttpException(`${entity} not found`, HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        `${this.entityClass.name} not found`,
+        HttpStatus.NOT_FOUND,
+      );
     }
   }
 

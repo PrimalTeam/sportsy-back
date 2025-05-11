@@ -17,6 +17,8 @@ import { Game } from './modules/game/entities/game.entity';
 import { Team } from './modules/team/entities/team.entity';
 import { TeamUser } from './modules/teamUser/entities/teamUser.entity';
 import { TeamStatus } from './modules/teamStatus/entities/teamStatus.entity';
+import { TeamModule } from './modules/team/team.module';
+import { TeamStatusModule } from './modules/teamStatus/teamStatus.module';
 
 @Module({
   imports: [
@@ -27,6 +29,8 @@ import { TeamStatus } from './modules/teamStatus/entities/teamStatus.entity';
     RoomModule,
     AuthModule,
     GameModule,
+    TeamModule,
+    TeamStatusModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {

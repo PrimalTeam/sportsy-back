@@ -22,6 +22,12 @@ export class GameService extends BaseService<Game> {
   }
 
   async create(createGameDto: DeepPartial<Game>, tournamentId: number) {
+    if (!createGameDto.teamStatuses) {
+      createGameDto.teamStatuses = [];
+      createGameDto.teamIds.forEach((id) =>
+        createGameDto.teamStatuses.push({ teamId: id } as any),
+      );
+    }
     const game = this.gameRepository.create(createGameDto);
     game.tournamentId = tournamentId;
     return this.gameRepository.save(game);
@@ -75,5 +81,18 @@ export class GameService extends BaseService<Game> {
       );
     }
     return filtered;
+  }
+
+  async checkGameRelation(gameId, touranmentId) {
+    const game = await this.gameRepository.findOne({
+      where: { id: gameId, tournamentId: touranmentId },
+    });
+    if (!game) {
+      throw new HttpException(
+        'The game you are trying access dont exists or you dont have access to it.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return game;
   }
 }
