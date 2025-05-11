@@ -24,15 +24,20 @@ export class RoomGuard implements CanActivate {
       [context.getHandler(), context.getClass()],
     );
 
-    const { user }: { user: AccessTokenPayload } = context
-      .switchToHttp()
-      .getRequest();
+    const req = context.switchToHttp().getRequest();
+    const { user }: { user: AccessTokenPayload } = req;
     const { roomId } = context.switchToHttp().getRequest().params;
 
     const role = await this.roomAuthService.getUserRoleInRoom(
       user.sub,
       Number(roomId),
     );
+
+    const room = await this.roomAuthService.getUserRoom(
+      user.sub,
+      Number(roomId),
+    );
+    req.room = room;
 
     if (!role) {
       throw new HttpException(
