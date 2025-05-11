@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -58,5 +59,15 @@ export class RoomUserController {
       ...generateRoomUserDto,
       roomId,
     });
+  }
+
+  @Delete('/:roomId/:roomUserId')
+  @UseGuards(JwtGuard, RoomGuard)
+  @RoomRole(RoomUserRole.ADMIN)
+  async deleteRoomUser(
+    @Param('roomId', ParseIntPipe) roomId: number,
+    @Param('roomUserId', ParseIntPipe) roomUserId: number,
+  ) {
+    return this.roomUserService.deleteRoomUser(roomId, roomUserId);
   }
 }

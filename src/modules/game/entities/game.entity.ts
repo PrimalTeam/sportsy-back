@@ -36,7 +36,7 @@ export class Game {
   })
   status: GameStatusEnum;
 
-  @Column({ type: 'date', nullable: true })
+  @Column({ type: 'date', nullable: true, default: () => 'CURRENT_TIMESTAMP' })
   dateStart?: Date;
 
   @Column({ type: 'interval', nullable: true })

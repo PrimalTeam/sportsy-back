@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, FindOptionsWhere, Repository } from 'typeorm';
 import { CreateGameDto, GenerateGameDto } from './dto/create-game.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
-import { Game } from './entities/game.entity';
+import { Game, GameStatusEnum } from './entities/game.entity';
 import { BaseService } from 'src/interfaces/baseService';
 import { TeamService } from '../team/team.service';
 
@@ -65,6 +65,10 @@ export class GameService extends BaseService<Game> {
     const teams = await this.checkTeams(createGameDto.teamIds, touranmentId);
     const createNew: DeepPartial<Game> = { ...createGameDto, teams };
     return this.create(createNew, touranmentId);
+  }
+
+  getGameStatuses() {
+    return Object.values(GameStatusEnum);
   }
 
   async checkTeams(teamId: number | number[], touranmentId: number) {

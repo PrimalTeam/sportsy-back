@@ -56,6 +56,7 @@ export class RoomUserService extends BaseService<RoomUser> {
     role,
   }: Required<GenerateRoomUserDto>): Promise<RoomUser> {
     const userId = await this.getValidatedUserId(identifier, identifierType);
+    await this.checkAdminByUserId(roomId, userId);
     await this.roomUserRepository.update(
       { roomId: roomId, userId: userId },
       { role: role },
@@ -104,8 +105,42 @@ export class RoomUserService extends BaseService<RoomUser> {
     this.roomUserRepository.delete(roomUser);
   }
 
-  deleteRoomUser({ roomId, userId }: RoomUserFindOptions) {
+  deleteRoomUserByUserId({ roomId, userId }: RoomUserFindOptions) {
     this.roomUserRepository.delete({ userId: userId, roomId: roomId });
+  }
+
+  async deleteRoomUser(roomId: number, roomUserId: number) {
+    await this.checkAdmin(roomId, roomUserId);
+    return this.roomUserRepository.delete({ id: roomUserId });
+  }
+
+  async checkAdmin(roomId: number, roomUserId: number) {
+    const roomUser = await this.findById(roomUserId);
+    if (roomUser.role == RoomUserRole.ADMIN) {
+      await this.checkLastAdmin(roomId);
+    }
+    return roomUser;
+  }
+
+  async checkAdminByUserId(roomId: number, userId: number) {
+    const roomUser = await this.findByUserAndRoomId({ roomId, userId });
+    if (roomUser.role == RoomUserRole.ADMIN) {
+      await this.checkLastAdmin(roomId);
+    }
+    return roomUser;
+  }
+
+  async checkLastAdmin(roomId: number) {
+    const roomUsers = await this.roomUserRepository.find({ where: { roomId } });
+    const adminUsers = roomUsers.filter(
+      (roomUser) => roomUser.role == RoomUserRole.ADMIN,
+    );
+    if (adminUsers.length < 2) {
+      throw new HttpException(
+        "Can't delete or change role of last admin.",
+        HttpStatus.CONFLICT,
+      );
+    }
   }
 
   findByUserAndRoomId({

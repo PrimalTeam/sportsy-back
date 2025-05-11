@@ -83,4 +83,9 @@ export class GameController {
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.gameService.remove(id);
   }
+
+  @Get('getGameStatuses')
+  async getGameStatuses(): Promise<string[]> {
+    return this.gameService.getGameStatuses();
+  }
 }
