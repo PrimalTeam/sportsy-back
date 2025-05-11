@@ -1,5 +1,24 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
-import { GameStatusEnum } from '../game-status.enum';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  ManyToMany,
+  OneToMany,
+  JoinTable,
+  RelationId,
+} from 'typeorm';
+import { Tournament } from 'src/modules/tournament/entities/tournament.entity';
+import { Team } from 'src/modules/team/entities/team.entity';
+import { TeamStatus } from 'src/modules/teamStatus/entities/teamStatus.entity';
+
+export enum GameStatusEnum {
+  PENDING = 'Pending',
+  IN_PROGRESS = 'In progress',
+  COMPLETED = 'Completed',
+  CANCELLED = 'Cancelled',
+}
 
 @Entity()
 export class Game {
@@ -17,16 +36,33 @@ export class Game {
   })
   status: GameStatusEnum;
 
-  @Column({ type: 'date' })
-  dateStart: Date;
+  @Column({ type: 'date', nullable: true })
+  dateStart?: Date;
+
+  @Column({ type: 'interval', nullable: true })
+  durationTime?: string;
 
   @Column()
-  durationTime: string;
+  tournamentId: number;
 
-  @Column({ type: 'jsonb', nullable: true, default: [] })
-  gameActions: string[];
+  @ManyToOne(() => Tournament, (tournament) => tournament.games, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'tournamentId' })
+  tournament: Tournament;
 
-  // @ManyToOne(() => Tournament, (tournament) => tournament.games)
-  // @JoinColumn({ name: 'tournamentId' })
-  // tournament: Tournament;
+  @ManyToMany(() => Team, (team) => team.games, {
+    onDelete: 'CASCADE',
+    cascade: true,
+  })
+  @JoinTable()
+  teams: Team[];
+
+  @RelationId((game: Game) => game.teams)
+  teamIds: number[];
+
+  @OneToMany(() => TeamStatus, (teamStatus) => teamStatus.game, {
+    cascade: true,
+  })
+  teamStatuses: TeamStatus[];
 }

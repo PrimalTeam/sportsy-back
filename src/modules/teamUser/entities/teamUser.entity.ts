@@ -4,13 +4,13 @@ import { Column, Entity, ManyToOne } from 'typeorm';
 
 @Entity('teamUsers')
 export class TeamUser extends BaseEntity {
-  @Column()
+  @Column({ nullable: true })
   name?: string;
 
-  @Column()
+  @Column({ nullable: true })
   surname?: string;
 
-  @Column()
+  @Column({ nullable: true })
   username?: string;
 
   @ManyToOne(() => Team, (team) => team.teamUsers, { onDelete: 'CASCADE' })

@@ -12,6 +12,11 @@ import { Room } from './modules/room/entities/room.entity';
 import { RoomModule } from './modules/room/room.module';
 import { RoomUser } from './modules/roomUser/entities/roomUser.entity';
 import { Tournament } from './modules/tournament/entities/tournament.entity';
+import { GameModule } from './modules/game/game.module';
+import { Game } from './modules/game/entities/game.entity';
+import { Team } from './modules/team/entities/team.entity';
+import { TeamUser } from './modules/teamUser/entities/teamUser.entity';
+import { TeamStatus } from './modules/teamStatus/entities/teamStatus.entity';
 
 @Module({
   imports: [
@@ -21,6 +26,7 @@ import { Tournament } from './modules/tournament/entities/tournament.entity';
     UserModule,
     RoomModule,
     AuthModule,
+    GameModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
@@ -31,7 +37,16 @@ import { Tournament } from './modules/tournament/entities/tournament.entity';
           username: configService.get<string>('POSTGRES_USER'),
           password: configService.get<string>('POSTGRES_PASSWORD'),
           database: configService.get<string>('POSTGRES_DB'),
-          entities: [User, Room, RoomUser, Tournament],
+          entities: [
+            User,
+            Room,
+            RoomUser,
+            Tournament,
+            Game,
+            Team,
+            TeamUser,
+            TeamStatus,
+          ],
           synchronize: true,
           dropSchema:
             configService.get<string>('NODE_ENV') == 'development'

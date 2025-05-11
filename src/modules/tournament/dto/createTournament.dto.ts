@@ -11,6 +11,7 @@ import {
   TournamentSportTypeEnum,
 } from '../entities/tournament.entity';
 import { Type } from 'class-transformer';
+import { CreateTeamDto } from 'src/modules/team/dto/createTeam.dto';
 
 export class CreateTournamentDto {
   @ValidateNested()
@@ -25,22 +26,14 @@ export class CreateTournamentDto {
   @IsOptional()
   @IsEnum(LeaderTypeEnum)
   readonly leaderType?: LeaderTypeEnum;
+
+  @ValidateNested({ each: true })
+  @IsOptional()
+  @Type(() => CreateTeamDto)
+  readonly teams?: CreateTeamDto[];
 }
 
-export class GenerateTournamentDto {
-  @ValidateNested()
-  @IsNotEmpty()
-  @Type(() => TournamentInfo)
-  readonly info: TournamentInfo;
-
-  @IsOptional()
-  @IsEnum(TournamentSportTypeEnum)
-  readonly sportType?: TournamentSportTypeEnum;
-
-  @IsOptional()
-  @IsEnum(LeaderTypeEnum)
-  readonly leaderType?: LeaderTypeEnum;
-
+export class GenerateTournamentDto extends CreateTournamentDto {
   @IsOptional()
   @IsNumber()
   readonly roomId?: number;

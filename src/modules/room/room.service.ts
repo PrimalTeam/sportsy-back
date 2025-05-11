@@ -8,6 +8,7 @@ import { RoomUser, RoomUserRole } from '../roomUser/entities/roomUser.entity';
 import { UserIdentifierType } from '../user/entities/user.entity';
 import { TournamentService } from '../tournament/tournament.service';
 import { BaseService } from 'src/interfaces/baseService';
+import { UpdateRoomDto } from './dto/updateRoom.dto';
 
 @Injectable()
 export class RoomService extends BaseService<Room> {
@@ -73,10 +74,7 @@ export class RoomService extends BaseService<Room> {
     return this.roomRepository.delete({ id: roomId });
   }
 
-  async updateRoomById(
-    roomId: number,
-    roomData: Partial<CreateRoomDto>,
-  ): Promise<Room> {
+  async updateRoomById(roomId: number, roomData: UpdateRoomDto): Promise<Room> {
     this.checkEntityExistenceById(roomId);
     await this.roomRepository.update({ id: roomId }, roomData);
     return this.findById(roomId);

@@ -1,4 +1,5 @@
 import { IsDateString, IsOptional, IsString } from 'class-validator';
+import { Game } from 'src/modules/game/entities/game.entity';
 import { Room } from 'src/modules/room/entities/room.entity';
 import { Team } from 'src/modules/team/entities/team.entity';
 import {
@@ -39,12 +40,12 @@ export class TournamentInfo {
   @IsString()
   title: string;
 
-  @Column({ default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ default: () => 'CURRENT_TIMESTAMP', nullable: true })
   @IsDateString()
   @IsOptional()
   dateStart?: Date;
 
-  @Column()
+  @Column({ nullable: true })
   @IsDateString()
   @IsOptional()
   dateEnd?: Date;
@@ -91,6 +92,9 @@ export class Tournament {
 
   @OneToMany(() => Team, (team) => team.tournament, { cascade: true })
   teams: Team[];
+
+  @OneToMany(() => Game, (game) => game.tournament, { cascade: true })
+  games: Game[];
 }
 
 const leader = {

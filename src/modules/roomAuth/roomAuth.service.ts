@@ -26,4 +26,12 @@ export class RoomAuthService {
     });
     return roomUser?.role ?? null;
   }
+
+  async getUserRoom(userId: number, roomId: number) {
+    const roomUser = await this.roomUserRepository.findOne({
+      where: { userId, roomId },
+      relations: { room: { tournament: true } },
+    });
+    return roomUser?.room ?? null;
+  }
 }

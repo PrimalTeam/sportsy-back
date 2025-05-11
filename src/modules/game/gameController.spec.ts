@@ -8,7 +8,7 @@ import { Game } from './entities/game.entity';
 import { AppModule } from 'src/app.module';
 import { CreateGameDto } from './dto/create-game.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
-import { GameStatusEnum } from './game-status.enum';
+import { GameStatusEnum } from './entities/game.entity';
 
 describe('GameController (Integration with AppModule)', () => {
   let app: INestApplication;

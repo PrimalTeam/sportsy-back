@@ -1,22 +1,32 @@
-import { IsEnum, IsString, IsOptional, IsNumber } from 'class-validator';
-import { GameStatusEnum } from '../game-status.enum';
+import {
+  IsEnum,
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsDateString,
+  IsNotEmpty,
+  IsArray,
+} from 'class-validator';
+import { GameStatusEnum } from '../entities/game.entity';
 
 export class CreateGameDto {
   @IsOptional()
-  teamStatuses?: number[];
-
   @IsEnum(GameStatusEnum)
-  status: GameStatusEnum;
+  status?: GameStatusEnum;
 
-  @IsNumber()
-  dateStart: number;
+  @IsDateString()
+  dateStart?: Date;
 
   @IsString()
-  durationTime: string;
+  durationTime?: string;
 
-  @IsOptional()
-  gameActions?: string[];
+  @IsNumber({}, { each: true })
+  @IsArray()
+  @IsNotEmpty()
+  teamIds: number[];
+}
 
+export class GenerateGameDto extends CreateGameDto {
   @IsOptional()
   @IsNumber()
   tournamentId?: number;

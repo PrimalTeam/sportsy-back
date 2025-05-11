@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -12,7 +13,10 @@ import { JwtGuard } from 'src/guards/auth.guard';
 import { RoomGuard } from 'src/guards/room.guard';
 import { RoomRole } from 'src/decorators/roomRole.decorator';
 import { RoomUserRole } from './entities/roomUser.entity';
-import { CreateRoomUserDto } from './dto/createRoomUser.dto';
+import {
+  CreateRoomUserDto,
+  GenerateRoomUserDto,
+} from './dto/createRoomUser.dto';
 
 @Controller('roomUser')
 export class RoomUserController {
@@ -41,5 +45,18 @@ export class RoomUserController {
     @Param('userId', ParseIntPipe) userId: number,
   ) {
     return await this.roomUserService.findByUserAndRoomId({ roomId, userId });
+  }
+
+  @Patch('/:roomId')
+  @UseGuards(JwtGuard, RoomGuard)
+  @RoomRole(RoomUserRole.ADMIN)
+  async changeRoomUserRole(
+    @Param('roomId', ParseIntPipe) roomId: number,
+    @Body() generateRoomUserDto: GenerateRoomUserDto,
+  ) {
+    return this.roomUserService.changeRoomUserRole({
+      ...generateRoomUserDto,
+      roomId,
+    });
   }
 }

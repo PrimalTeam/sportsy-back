@@ -7,6 +7,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Patch,
   Query,
   UseGuards,
   UseInterceptors,
@@ -19,6 +20,7 @@ import { CreateRoomDto } from './dto/createRoom.dto';
 import { RoomRole } from 'src/decorators/roomRole.decorator';
 import { RoomUserRole } from '../roomUser/entities/roomUser.entity';
 import { RoomGuard } from 'src/guards/room.guard';
+import { UpdateRoomDto } from './dto/updateRoom.dto';
 
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('room')
@@ -66,5 +68,15 @@ export class RoomController {
     const room = await this.roomService.findByIdWithRelations(roomId, includes);
     this.roomService.verifyEntityFind(room);
     return room;
+  }
+
+  @Patch('/:roomId')
+  @RoomRole()
+  @UseGuards(JwtGuard, RoomGuard)
+  async updateRoom(
+    @Param('roomId', ParseIntPipe) roomId: number,
+    updateRoomDto: UpdateRoomDto,
+  ) {
+    return this.roomService.updateRoomById(roomId, updateRoomDto);
   }
 }

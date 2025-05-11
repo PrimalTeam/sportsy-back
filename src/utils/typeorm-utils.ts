@@ -55,6 +55,35 @@ export class TypeOrmUtils {
     return relationsMap;
   }
 
+  static getValidRelationsBFS(entity: Function): Record<string, Function> {
+    const visited = new Set<Function>();
+    const queue: Array<{ prefix: string; entity: Function }> = [
+      { prefix: '', entity },
+    ];
+    const relationsMap: Record<string, Function> = {};
+
+    while (queue.length > 0) {
+      const { prefix, entity } = queue.shift()!;
+
+      if (visited.has(entity)) continue;
+      visited.add(entity);
+
+      const relations = getMetadataArgsStorage().relations.filter(
+        (r) => r.target === entity,
+      );
+
+      for (const rel of relations) {
+        const relEntity = (rel.type as Function)();
+        const key = prefix ? `${prefix}.${rel.propertyName}` : rel.propertyName;
+
+        relationsMap[key] = relEntity;
+        queue.push({ prefix: key, entity: relEntity });
+      }
+    }
+
+    return relationsMap;
+  }
+
   static isValidNestedRelation(
     relationPath: string,
     _rootEntity: Function,
@@ -67,7 +96,7 @@ export class TypeOrmUtils {
     entity: Function,
     includes: string[],
   ): Record<string, any> {
-    const validRelations = this.getValidRelationsRecursively(entity);
+    const validRelations = this.getValidRelationsBFS(entity);
     const selectedIncludes = includes.filter((include) =>
       this.isValidNestedRelation(include, entity, validRelations),
     );
