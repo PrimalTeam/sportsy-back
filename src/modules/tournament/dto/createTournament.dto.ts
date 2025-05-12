@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -22,6 +23,10 @@ export class CreateTournamentDto {
   @IsOptional()
   @IsEnum(TournamentSportTypeEnum)
   readonly sportType?: TournamentSportTypeEnum;
+
+  @IsOptional()
+  @IsBoolean()
+  readonly autoCreateFromLeader?: boolean;
 
   @IsOptional()
   @IsEnum(LeaderTypeEnum)

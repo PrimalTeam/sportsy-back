@@ -41,6 +41,7 @@ export class RoomUserService extends BaseService<RoomUser> {
   async addRoomUser(roomUserDto: CreateRoomUserDto, roomId: number) {
     const { identifier, identifierType, role } = roomUserDto;
     const userId = await this.getValidatedUserId(identifier, identifierType);
+    await this.checkRoomUserExistance(userId, roomId);
     const newRoomUser = this.roomUserRepository.create({
       userId,
       role,
@@ -112,6 +113,16 @@ export class RoomUserService extends BaseService<RoomUser> {
   async deleteRoomUser(roomId: number, roomUserId: number) {
     await this.checkAdmin(roomId, roomUserId);
     return this.roomUserRepository.delete({ id: roomUserId });
+  }
+
+  async checkRoomUserExistance(userId: number, roomId: number): Promise<void> {
+    const roomUser = await this.findByUserAndRoomId({ roomId, userId });
+    if (roomUser) {
+      throw new HttpException(
+        'User is already presented in this room.',
+        HttpStatus.CONFLICT,
+      );
+    }
   }
 
   async checkAdmin(roomId: number, roomUserId: number) {

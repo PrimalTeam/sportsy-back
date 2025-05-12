@@ -47,8 +47,8 @@ export class GameService extends BaseService<Game> {
     });
   }
 
-  remove(id: number) {
-    this.checkEntityExistenceById(id);
+  async remove(id: number) {
+    await this.checkEntityExistenceById(id);
     return this.gameRepository.delete(id);
   }
 
