@@ -54,6 +54,7 @@ import { LadderModule } from './modules/ladder/ladder.module';
             TeamStatus,
           ],
           synchronize: true,
+          // subscribers: [GameSubscriber],
           dropSchema:
             configService.get<string>('NODE_ENV') == 'development'
               ? false

@@ -6,6 +6,8 @@ import { GameService } from './game.service';
 import { RoomAuthModule } from '../roomAuth/roomAuth.module';
 import { Tournament } from '../tournament/entities/tournament.entity';
 import { TeamModule } from '../team/team.module';
+import { GameSubscriber } from 'src/db/db.listeners';
+import { LadderService } from '../ladder/ladder.service';
 
 @Module({
   imports: [
@@ -14,7 +16,7 @@ import { TeamModule } from '../team/team.module';
     TeamModule,
   ],
   controllers: [GameController],
-  providers: [GameService],
+  providers: [GameService, LadderService, GameSubscriber],
   exports: [GameService],
 })
 export class GameModule {}
