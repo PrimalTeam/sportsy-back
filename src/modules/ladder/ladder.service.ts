@@ -89,6 +89,30 @@ export class LadderService {
     }
   }
 
+  async updateLadderByTournamentId(touranmentId: number) {
+    // console.log('maybe');
+    const tournament = await this.findTournamentForLeadder(touranmentId);
+    switch (tournament.leaderType) {
+      case LeaderTypeEnum.SINGLE_ELIMINATION: {
+        const ladder = tournament.leader;
+        console.log(ladder);
+        if (ladder.mainLadder != null) {
+          console.log(ladder);
+          const updatedLadder = await this.updateSingleEliminationLadder(
+            tournament,
+            ladder,
+          );
+          tournament.leader = updatedLadder;
+          this.tournamentRepository.save(tournament);
+          return updatedLadder;
+        }
+        break;
+      }
+      case LeaderTypeEnum.POOL_PLAY:
+        break;
+    }
+  }
+
   async updateLadder(touranment: Tournament) {
     const tournamentGood = await this.findTournamentForLeadder(touranment.id);
     switch (touranment.leaderType) {
