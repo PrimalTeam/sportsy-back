@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -36,6 +37,10 @@ export class CreateTournamentDto {
     description: 'Leader representation type.',
     enum: LeaderTypeEnum,
   })
+  @IsOptional()
+  @IsBoolean()
+  readonly autoCreateFromLeader?: boolean;
+
   @IsOptional()
   @IsEnum(LeaderTypeEnum)
   readonly leaderType?: LeaderTypeEnum;

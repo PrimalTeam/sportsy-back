@@ -92,14 +92,11 @@ export class Tournament {
     description: 'Serialized representation of the tournament leader tree.',
   })
   @Column({
-    type: 'json',
-    default: '{}',
-    transformer: {
-      to: (value: Record<string, unknown>) => JSON.stringify(value),
-      from: (_value: string) => {},
-    },
+    type: 'json', // or 'json' depending on your preference
+    default: () => "'{}'", // SQL expression with properly escaped JSON
+    nullable: true,
   })
-  leader: string;
+  leader: any;
 
   @ApiProperty({
     description: 'Type of leader structure.',
@@ -111,6 +108,9 @@ export class Tournament {
     default: LeaderTypeEnum.SINGLE_ELIMINATION,
   })
   leaderType: LeaderTypeEnum;
+
+  @Column({ default: false })
+  autoCreateFromLeader: boolean;
 
   @ApiProperty({
     description: 'Room associated with the tournament.',

@@ -41,6 +41,7 @@ export class TournamentService {
         title: 'New Tournament',
         description: 'New Tournament',
       },
+      autoCreateFromLeader: false,
     };
     return this.generateTournament(defaultTournament);
   }

@@ -19,6 +19,7 @@ import { TeamUser } from './modules/teamUser/entities/teamUser.entity';
 import { TeamStatus } from './modules/teamStatus/entities/teamStatus.entity';
 import { TeamModule } from './modules/team/team.module';
 import { TeamStatusModule } from './modules/teamStatus/teamStatus.module';
+import { LadderModule } from './modules/ladder/ladder.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { TeamStatusModule } from './modules/teamStatus/teamStatus.module';
     GameModule,
     TeamModule,
     TeamStatusModule,
+    LadderModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
