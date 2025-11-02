@@ -18,16 +18,40 @@ import {
   CreateRoomUserDto,
   GenerateRoomUserDto,
 } from './dto/createRoomUser.dto';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
+import { RoomUser } from './entities/roomUser.entity';
 
+@ApiTags('room-users')
 @Controller('roomUser')
 export class RoomUserController {
   constructor(private readonly roomUserService: RoomUserService) {}
 
+  @ApiOperation({ summary: 'List available room user roles.' })
+  @ApiOkResponse({
+    description: 'Supported room user roles.',
+    type: String,
+    isArray: true,
+  })
   @Get('roles')
   async getRoomUserRoles() {
     return this.roomUserService.getRoomUserRoles();
   }
 
+  @ApiOperation({ summary: 'Add a user to the specified room.' })
+  @ApiOkResponse({
+    description: 'Room user added successfully.',
+    type: RoomUser,
+  })
+  @ApiBearerAuth()
+  @ApiParam({ name: 'roomId', type: Number })
+  @ApiBody({ type: CreateRoomUserDto })
   @Post('addUser/:roomId')
   @UseGuards(JwtGuard, RoomGuard)
   @RoomRole(RoomUserRole.ADMIN)
@@ -38,6 +62,11 @@ export class RoomUserController {
     return await this.roomUserService.addRoomUser(createRoomUserDto, roomId);
   }
 
+  @ApiOperation({ summary: 'Get a room user by room and user identifiers.' })
+  @ApiOkResponse({ description: 'Room user returned.', type: RoomUser })
+  @ApiBearerAuth()
+  @ApiParam({ name: 'roomId', type: Number })
+  @ApiParam({ name: 'userId', type: Number })
   @Get('/:roomId/:userId')
   @UseGuards(JwtGuard, RoomGuard)
   @RoomRole(RoomUserRole.ADMIN)
@@ -48,6 +77,11 @@ export class RoomUserController {
     return await this.roomUserService.findByUserAndRoomId({ roomId, userId });
   }
 
+  @ApiOperation({ summary: 'Change a user role within a room.' })
+  @ApiOkResponse({ description: 'Room user role updated.', type: RoomUser })
+  @ApiBearerAuth()
+  @ApiParam({ name: 'roomId', type: Number })
+  @ApiBody({ type: GenerateRoomUserDto })
   @Patch('/:roomId')
   @UseGuards(JwtGuard, RoomGuard)
   @RoomRole(RoomUserRole.ADMIN)
@@ -61,6 +95,11 @@ export class RoomUserController {
     });
   }
 
+  @ApiOperation({ summary: 'Remove a room user from the room.' })
+  @ApiOkResponse({ description: 'Room user removed successfully.' })
+  @ApiBearerAuth()
+  @ApiParam({ name: 'roomId', type: Number })
+  @ApiParam({ name: 'roomUserId', type: Number })
   @Delete('/:roomId/:roomUserId')
   @UseGuards(JwtGuard, RoomGuard)
   @RoomRole(RoomUserRole.ADMIN)

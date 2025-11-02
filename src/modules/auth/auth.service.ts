@@ -13,6 +13,7 @@ import { RegisterAuthDto } from './dto/registerAuth.dto';
 import { PublicUserDto } from '../user/dto/publicUser.dto';
 import { AccessTokenPayloadCreate } from './models/accessToken';
 import { RefreshTokenPayloadCreate } from './models/refreshToken';
+import { AuthTokensDto } from './dto/authTokens.dto';
 import { ProvidersNames } from '../custom-providers';
 
 @Injectable()
@@ -52,16 +53,16 @@ export class AuthService {
     return this.refreshJwtService.sign(payload);
   }
 
-  async generateLoginResponse(publicUser: PublicUserDto) {
+  async generateLoginResponse(
+    publicUser: PublicUserDto,
+  ): Promise<AuthTokensDto> {
     return {
       access_token: await this.generateAccessToken(publicUser),
       refresh_token: await this.generateRefreshToken(publicUser),
     };
   }
 
-  async refreshToken(
-    refreshToken: string,
-  ): Promise<{ access_token: string; refresh_token: string }> {
+  async refreshToken(refreshToken: string): Promise<AuthTokensDto> {
     const payload = this.refreshJwtService.verify(refreshToken);
     if (!payload) {
       throw new HttpException(

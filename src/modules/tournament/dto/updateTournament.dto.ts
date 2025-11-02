@@ -1,4 +1,4 @@
-import { DeepPartial } from 'typeorm';
+import { PartialType } from '@nestjs/swagger';
 import { CreateTournamentDto } from './createTournament.dto';
 
-export type UpdateTournamentDto = DeepPartial<CreateTournamentDto>;
+export class UpdateTournamentDto extends PartialType(CreateTournamentDto) {}
