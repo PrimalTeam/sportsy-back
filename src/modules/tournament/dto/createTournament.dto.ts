@@ -42,6 +42,10 @@ export class CreateTournamentDto {
   readonly autoCreateFromLeader?: boolean;
 
   @IsOptional()
+  @IsBoolean()
+  readonly autoCreateFromLeader?: boolean;
+
+  @IsOptional()
   @IsEnum(LeaderTypeEnum)
   readonly leaderType?: LeaderTypeEnum;
 
