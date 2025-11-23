@@ -7,7 +7,6 @@ import {
 } from 'class-validator';
 import {
   LeaderTypeEnum,
-  Tournament,
   TournamentInfo,
   TournamentInternalConfig,
   TournamentSportTypeEnum,
