@@ -1,5 +1,4 @@
 import {
-  IsBoolean,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -8,7 +7,9 @@ import {
 } from 'class-validator';
 import {
   LeaderTypeEnum,
+  Tournament,
   TournamentInfo,
+  TournamentInternalConfig,
   TournamentSportTypeEnum,
 } from '../entities/tournament.entity';
 import { Type } from 'class-transformer';
@@ -33,18 +34,17 @@ export class CreateTournamentDto {
   @IsEnum(TournamentSportTypeEnum)
   readonly sportType?: TournamentSportTypeEnum;
 
+  @ApiProperty({
+    description: 'Internal settings of the tournament.',
+    type: () => TournamentInternalConfig,
+  })
+  @IsOptional()
+  readonly internalConfig?: TournamentInternalConfig;
+
   @ApiPropertyOptional({
     description: 'Leader representation type.',
     enum: LeaderTypeEnum,
   })
-  @IsOptional()
-  @IsBoolean()
-  readonly autoCreateFromLeader?: boolean;
-
-  @IsOptional()
-  @IsBoolean()
-  readonly autoCreateFromLeader?: boolean;
-
   @IsOptional()
   @IsEnum(LeaderTypeEnum)
   readonly leaderType?: LeaderTypeEnum;

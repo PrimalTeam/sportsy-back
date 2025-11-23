@@ -47,6 +47,24 @@ export class TeamStatusService extends BaseService<TeamStatus> {
     return this.teamStatusRepository.update({ id: teamStatusId }, { score });
   }
 
+  async changeTeamStatusByGameTeamId(
+    gameId: number,
+    teamId: number,
+    score: number,
+  ) {
+    const teamStatus = await this.teamStatusRepository.findOne({
+      where: { game: { id: gameId }, team: { id: teamId } },
+      relations: { game: true, team: true },
+    });
+    if (!teamStatus) {
+      throw new HttpException(
+        'TeamStatus not found for the given game and team.',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return this.teamStatusRepository.update({ id: teamStatus.id }, { score });
+  }
+
   async checkTeamStatusRelation(teamStatusId: number, touranmentId: number) {
     const teamStatus = await this.teamStatusRepository.findOne({
       where: { id: teamStatusId, game: { tournamentId: touranmentId } },

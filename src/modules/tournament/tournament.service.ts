@@ -41,7 +41,9 @@ export class TournamentService {
         title: 'New Tournament',
         description: 'New Tournament',
       },
-      autoCreateFromLeader: false,
+      internalConfig: {
+        autogenerateGamesFromLadder: false,
+      },
     };
     return this.generateTournament(defaultTournament);
   }

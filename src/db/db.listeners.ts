@@ -1,19 +1,22 @@
 import {
   EventSubscriber,
   EntitySubscriberInterface,
-  InsertEvent,
   UpdateEvent,
   DataSource,
 } from 'typeorm';
+import type { QueryEvent } from 'typeorm/subscriber/event/QueryEvent';
+import { Inject } from '@nestjs/common';
 import { Game } from 'src/modules/game/entities/game.entity';
 import { TeamStatus } from 'src/modules/teamStatus/entities/teamStatus.entity';
-import { LadderService } from 'src/modules/ladder/ladder.service';
-import { AfterQueryEvent } from 'typeorm/subscriber/event/QueryEvent';
+import { ILadderService } from 'src/modules/ladder/interfaces/ladder-service.interface';
 
 @EventSubscriber()
 export class GameSubscriber implements EntitySubscriberInterface<Game> {
+  private isUpdating = false;
+
   constructor(
-    private readonly ladderService: LadderService,
+    @Inject('ILadderService')
+    private readonly ladderService: ILadderService,
     dataSource: DataSource,
   ) {
     dataSource.subscribers.push(this);
@@ -23,41 +26,80 @@ export class GameSubscriber implements EntitySubscriberInterface<Game> {
     return Game;
   }
 
-  async afterQuery(event: AfterQueryEvent<Game>) {
-    if ((event.rawResults as any).command == 'UPDATE') {
-      const gameId = event.parameters[event.parameters.length - 1];
-      const game = await event.manager.getRepository(Game).findOne({
-        where: { id: gameId },
-      });
+  async afterUpdate(event: UpdateEvent<Game>) {
+    if (this.isUpdating) return;
 
-      const tournamentId = game?.tournamentId;
-      if (tournamentId) {
-        await this.ladderService.updateLadderByTournamentId(tournamentId);
+    // TypeORM's afterUpdate doesn't reliably provide entity IDs
+    // We need to check if we have update criteria with an ID
+    const updateCriteria = event.entity;
+
+    // If we don't have direct access to the ID, skip this update
+    // The afterInsert hook will handle new games, and manual service calls
+    // will handle updates that matter
+    if (!updateCriteria || typeof updateCriteria !== 'object') {
+      return;
+    }
+
+    // Try to extract ID from the update criteria
+    const gameId =
+      'id' in updateCriteria
+        ? (updateCriteria as { id: number }).id
+        : undefined;
+
+    if (!gameId) {
+      // This is expected for bulk updates or certain TypeORM operations
+      // We can safely skip these as they're usually internal operations
+      return;
+    }
+
+    const game = await event.manager.getRepository(Game).findOne({
+      where: { id: gameId },
+    });
+
+    if (game?.tournamentId) {
+      console.log(
+        `Updating ladder for tournament ${game.tournamentId} after game ${gameId} update`,
+      );
+
+      try {
+        this.isUpdating = true;
+        await this.ladderService.updateLadderByTournamentId(game.tournamentId);
+      } finally {
+        this.isUpdating = false;
       }
     }
-    // console.log(event.rawResults);
   }
 
-  async afterInsert(event: InsertEvent<Game>) {
-    // console.log('siema');
-    await this.ladderService.updateLadderByTournamentId(
-      event.entity.tournamentId,
-    );
-  }
+  async afterQuery(event: QueryEvent<Game>) {
+    if (this.isUpdating) return;
 
-  async afterUpdate(_event: UpdateEvent<Game>) {
-    // const game = await event.manager.getRepository(Game).findOne({
-    //   where: { id: event.entity?.id ?? event.databaseEntity?.id },
-    // });
-    // console.log(event.entity.id);
-    // console.log(game);
-    // const tournamentId = game?.tournamentId;
-    // console.log('yes', tournamentId);
-    // if (tournamentId) {
-    //   const ladder =
-    //     await this.ladderService.updateLadderByTournamentId(tournamentId);
-    //   console.log(ladder);
-    // }
+    // Check if this is an UPDATE query on Game
+    const rawResult = event.query as { command?: string };
+    if (String(rawResult).startsWith('UPDATE "game"')) {
+      // Extract teamStatusId from query parameters (last parameter is usually the ID in WHERE clause)
+      const gameId = event.parameters?.[event.parameters.length - 1];
+
+      if (gameId && typeof gameId === 'number') {
+        try {
+          this.isUpdating = true;
+
+          const game = await event.connection.manager
+            .getRepository(Game)
+            .findOne({
+              where: { id: gameId },
+              relations: {},
+            });
+
+          if (game?.tournamentId) {
+            await this.ladderService.updateLadderByTournamentId(
+              game.tournamentId,
+            );
+          }
+        } finally {
+          this.isUpdating = false;
+        }
+      }
+    }
   }
 }
 
@@ -65,8 +107,11 @@ export class GameSubscriber implements EntitySubscriberInterface<Game> {
 export class TeamStatusSubscriber
   implements EntitySubscriberInterface<TeamStatus>
 {
+  private isUpdating = false;
+
   constructor(
-    private readonly ladderService: LadderService,
+    @Inject('ILadderService')
+    private readonly ladderService: ILadderService,
     dataSource: DataSource,
   ) {
     dataSource.subscribers.push(this);
@@ -76,46 +121,35 @@ export class TeamStatusSubscriber
     return TeamStatus;
   }
 
-  async afterQuery(event: AfterQueryEvent<TeamStatus>) {
-    if ((event.rawResults as any).command == 'UPDATE') {
-      console.log('oh no', event.rawResults);
-      const teamStatusId = event.parameters[event.parameters.length - 1];
-      console.log(teamStatusId);
-      const teamStatus = await event.manager.getRepository(TeamStatus).findOne({
-        where: { id: teamStatusId },
-        relations: { team: true },
-      });
+  async afterQuery(event: QueryEvent<TeamStatus>) {
+    if (this.isUpdating) return;
 
-      const tournamentId = teamStatus?.team?.tournamentId;
-      if (tournamentId) {
-        await this.ladderService.updateLadderByTournamentId(tournamentId);
+    // Check if this is an UPDATE query on TeamStatus
+    const rawResult = event.query as { command?: string };
+    if (String(rawResult).startsWith('UPDATE "teamStatuses"')) {
+      // Extract teamStatusId from query parameters (last parameter is usually the ID in WHERE clause)
+      const teamStatusId = event.parameters?.[event.parameters.length - 1];
+
+      if (teamStatusId && typeof teamStatusId === 'number') {
+        try {
+          this.isUpdating = true;
+
+          const teamStatus = await event.connection.manager
+            .getRepository(TeamStatus)
+            .findOne({
+              where: { id: teamStatusId },
+              relations: { team: true },
+            });
+
+          if (teamStatus?.team?.tournamentId) {
+            await this.ladderService.updateLadderByTournamentId(
+              teamStatus.team.tournamentId,
+            );
+          }
+        } finally {
+          this.isUpdating = false;
+        }
       }
     }
-    // console.log(event.rawResults);
-  }
-
-  async afterInsert(event: InsertEvent<TeamStatus>) {
-    const teamStatus = await event.manager.getRepository(TeamStatus).findOne({
-      where: { id: event.entity.id },
-      relations: { team: true },
-    });
-    if (teamStatus?.team?.tournamentId) {
-      await this.ladderService.updateLadderByTournamentId(
-        teamStatus.team.tournamentId,
-      );
-    }
-  }
-
-  async afterUpdate(_event: UpdateEvent<TeamStatus>) {
-    // const teamStatusId = event.entity?.id ?? event.databaseEntity?.id;
-    // const teamStatus = await event.manager.getRepository(TeamStatus).findOne({
-    //   where: { id: teamStatusId },
-    //   relations: { team: true },
-    // });
-    // if (teamStatus?.team?.tournamentId) {
-    //   await this.ladderService.updateLadderByTournamentId(
-    //     teamStatus.team.tournamentId,
-    //   );
-    // }
   }
 }

@@ -81,4 +81,31 @@ export class TeamStatusController {
       teamStatusId,
     );
   }
+
+  @ApiOperation({
+    summary: 'Update score for a team status entry by game and team IDs.',
+  })
+  @ApiOkResponse({
+    description: 'Team status score updated.',
+    type: TeamStatus,
+  })
+  @ApiBearerAuth()
+  @ApiParam({ name: 'roomId', type: Number })
+  @ApiParam({ name: 'gameId', type: Number })
+  @ApiParam({ name: 'teamId', type: Number })
+  @ApiBody({ type: UpdateTeamStatusScoreDto })
+  @UseGuards(JwtGuard, RoomGuard)
+  @RoomRole(RoomUserRole.ADMIN, RoomUserRole.GAMEOBSERVER)
+  @Patch(':roomId/:gameId/:teamId')
+  changeTeamStausByGameTeamId(
+    @Param('gameId', ParseIntPipe) gameId: number,
+    @Param('teamId', ParseIntPipe) teamId: number,
+    @Body() updateScore: UpdateTeamStatusScoreDto,
+  ) {
+    return this.teamStatusService.changeTeamStatusByGameTeamId(
+      gameId,
+      teamId,
+      updateScore.score,
+    );
+  }
 }

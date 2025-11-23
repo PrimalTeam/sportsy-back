@@ -1,4 +1,4 @@
-import { IsDateString, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsDateString, IsOptional, IsString } from 'class-validator';
 import { Game } from 'src/modules/game/entities/game.entity';
 import { Room } from 'src/modules/room/entities/room.entity';
 import { Team } from 'src/modules/team/entities/team.entity';
@@ -30,6 +30,16 @@ export enum LeaderTypeEnum {
   PLAYOFFS = 'playoffs',
   CONFERENCE = 'conference',
   LEAGUE = 'league',
+}
+
+export class TournamentInternalConfig {
+  @ApiPropertyOptional({
+    description: 'Config option to autogenerate games from ladder.',
+    example: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  autogenerateGamesFromLadder?: boolean;
 }
 
 export class TournamentInfo {
@@ -109,8 +119,15 @@ export class Tournament {
   })
   leaderType: LeaderTypeEnum;
 
-  @Column({ default: false })
-  autoCreateFromLeader: boolean;
+  @ApiPropertyOptional({
+    description: 'Serialized representation of the tournament config.',
+  })
+  @Column({
+    type: 'json', // or 'json' depending on your preference
+    default: () => "'{}'", // SQL expression with properly escaped JSON
+    nullable: true,
+  })
+  internalConfig: TournamentInternalConfig;
 
   @ApiProperty({
     description: 'Room associated with the tournament.',
