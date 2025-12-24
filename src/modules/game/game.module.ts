@@ -8,16 +8,19 @@ import { Tournament } from '../tournament/entities/tournament.entity';
 import { TeamModule } from '../team/team.module';
 import { GameSubscriber } from 'src/db/db.listeners';
 import { LadderModule } from '../ladder/ladder.module';
+import { GameGateway } from './game.gateway';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Game, Tournament]),
     RoomAuthModule,
+    AuthModule,
     TeamModule,
     forwardRef(() => LadderModule),
   ],
   controllers: [GameController],
-  providers: [GameService, GameSubscriber],
+  providers: [GameService, GameSubscriber, GameGateway],
   exports: [GameService],
 })
 export class GameModule {}

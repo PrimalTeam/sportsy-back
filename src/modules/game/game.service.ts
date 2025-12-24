@@ -6,6 +6,7 @@ import { UpdateGameDto } from './dto/update-game.dto';
 import { Game, GameStatusEnum } from './entities/game.entity';
 import { BaseService } from 'src/interfaces/baseService';
 import { TeamService } from '../team/team.service';
+import { GameGateway } from './game.gateway';
 
 @Injectable()
 export class GameService extends BaseService<Game> {
@@ -13,6 +14,7 @@ export class GameService extends BaseService<Game> {
     @InjectRepository(Game)
     private gameRepository: Repository<Game>,
     @Inject() private readonly teamService: TeamService,
+    private readonly gameGateway: GameGateway,
   ) {
     super(gameRepository, Game);
   }
@@ -30,14 +32,18 @@ export class GameService extends BaseService<Game> {
     }
     const game = this.gameRepository.create(createGameDto);
     game.tournamentId = tournamentId;
-    return this.gameRepository.save(game);
+    const savedGame = await this.gameRepository.save(game);
+    this.gameGateway.emitGameCreated(savedGame);
+    return savedGame;
   }
 
   async update(id: number, updateGameDto: UpdateGameDto) {
     await this.checkEntityExistenceById(id);
     const whereOption: FindOptionsWhere<Game> = { id };
     await this.gameRepository.update(whereOption, updateGameDto);
-    return this.findById(id);
+    const updatedGame = await this.findById(id);
+    this.gameGateway.emitGameUpdated(updatedGame);
+    return updatedGame;
   }
 
   findByTournamentId(tournamentId: number) {
@@ -48,8 +54,10 @@ export class GameService extends BaseService<Game> {
   }
 
   async remove(id: number) {
-    await this.checkEntityExistenceById(id);
-    return this.gameRepository.delete(id);
+    const game = await this.checkEntityExistenceById(id);
+    const deleteResult = await this.gameRepository.delete(id);
+    this.gameGateway.emitGameDeleted(id, game.tournamentId);
+    return deleteResult;
   }
 
   async findGamesOfTeam(teamId: number, touranmentId: number) {
@@ -69,6 +77,19 @@ export class GameService extends BaseService<Game> {
 
   getGameStatuses() {
     return Object.values(GameStatusEnum);
+  }
+
+  async emitGameUpdatedById(gameId: number) {
+    const gameSnapshot =
+      (await this.findByIdWithRelations(gameId, [
+        'teamStatuses',
+        'teamStatuses.team',
+        'teams',
+      ])) ?? (await this.findById(gameId));
+
+    if (gameSnapshot) {
+      this.gameGateway.emitGameUpdated(gameSnapshot);
+    }
   }
 
   async checkTeams(teamId: number | number[], touranmentId: number) {

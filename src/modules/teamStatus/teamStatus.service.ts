@@ -29,7 +29,9 @@ export class TeamStatusService extends BaseService<TeamStatus> {
   ) {
     const teamStatus = this.teamStatusRepository.create(createTeamStatus);
     teamStatus.gameId = gameId;
-    return this.teamStatusRepository.save(teamStatus);
+    const saved = await this.teamStatusRepository.save(teamStatus);
+    await this.gameService.emitGameUpdatedById(gameId);
+    return saved;
   }
 
   async addTeamStatus(
@@ -39,12 +41,20 @@ export class TeamStatusService extends BaseService<TeamStatus> {
   ) {
     const game = await this.gameService.checkGameRelation(gameId, touranmentId);
     const createNew: DeepPartial<TeamStatus> = { ...createTeamStatus, game };
-    return this.createTeamStatus(createNew, touranmentId);
+    return this.createTeamStatus(createNew, game.id);
   }
 
   async changeTeamScore(score: number, tournamentId, teamStatusId: number) {
-    await this.checkTeamStatusRelation(teamStatusId, tournamentId);
-    return this.teamStatusRepository.update({ id: teamStatusId }, { score });
+    const teamStatus = await this.checkTeamStatusRelation(
+      teamStatusId,
+      tournamentId,
+    );
+    const result = await this.teamStatusRepository.update(
+      { id: teamStatusId },
+      { score },
+    );
+    await this.gameService.emitGameUpdatedById(teamStatus.game.id);
+    return result;
   }
 
   async changeTeamStatusByGameTeamId(
@@ -62,7 +72,12 @@ export class TeamStatusService extends BaseService<TeamStatus> {
         HttpStatus.NOT_FOUND,
       );
     }
-    return this.teamStatusRepository.update({ id: teamStatus.id }, { score });
+    const result = await this.teamStatusRepository.update(
+      { id: teamStatus.id },
+      { score },
+    );
+    await this.gameService.emitGameUpdatedById(teamStatus.game.id);
+    return result;
   }
 
   async checkTeamStatusRelation(teamStatusId: number, touranmentId: number) {

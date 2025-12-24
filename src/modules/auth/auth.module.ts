@@ -34,6 +34,6 @@ import { ProvidersNames } from '../custom-providers';
     },
   ],
   controllers: [AuthController],
-  exports: [AuthService, JwtModule],
+  exports: [AuthService, JwtModule, ProvidersNames.ACCESS_TOKEN_SERVICE],
 })
 export class AuthModule {}
