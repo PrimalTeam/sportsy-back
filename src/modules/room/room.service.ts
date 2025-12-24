@@ -69,13 +69,13 @@ export class RoomService extends BaseService<Room> {
     });
   }
 
-  deleteRoomById(roomId: number) {
-    this.checkEntityExistenceById(roomId);
+  async deleteRoomById(roomId: number) {
+    await this.checkEntityExistenceById(roomId);
     return this.roomRepository.delete({ id: roomId });
   }
 
   async updateRoomById(roomId: number, roomData: UpdateRoomDto): Promise<Room> {
-    this.checkEntityExistenceById(roomId);
+    await this.checkEntityExistenceById(roomId);
     await this.roomRepository.update({ id: roomId }, roomData);
     return this.findById(roomId);
   }
