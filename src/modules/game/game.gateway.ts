@@ -16,7 +16,11 @@ import { JwtService } from '@nestjs/jwt';
 import { ProvidersNames } from '../custom-providers';
 import { AccessTokenPayload } from '../auth/models/accessToken';
 
-type TournamentPayload = { tournamentId: number; roomId: number };
+type TournamentPayload = {
+  tournamentId: number;
+  roomId: number;
+  token?: string;
+};
 type ClientContext = { userId: number };
 
 @WebSocketGateway({ namespace: 'games', cors: { origin: '*' } })
@@ -45,8 +49,9 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: TournamentPayload,
   ) {
-    const { tournamentId, roomId } = this.validateTournamentPayload(payload);
-    await this.ensureMembership(client, roomId, tournamentId);
+    const { tournamentId, roomId, token } =
+      this.validateTournamentPayload(payload);
+    await this.ensureMembership(client, roomId, tournamentId, token);
 
     const room = this.getTournamentRoom(tournamentId);
     client.join(room);
@@ -58,8 +63,9 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: TournamentPayload,
   ) {
-    const { tournamentId, roomId } = this.validateTournamentPayload(payload);
-    await this.ensureMembership(client, roomId, tournamentId);
+    const { tournamentId, roomId, token } =
+      this.validateTournamentPayload(payload);
+    await this.ensureMembership(client, roomId, tournamentId, token);
 
     const room = this.getTournamentRoom(tournamentId);
     client.leave(room);
@@ -119,20 +125,24 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client: Socket,
     roomId: number,
     tournamentId: number,
+    tokenFromPayload?: string,
   ) {
-    const { userId } = await this.getClientContext(client);
+    const { userId } = await this.getClientContext(client, tokenFromPayload);
     const room = await this.roomAuthService.getUserRoom(userId, roomId);
     if (!room || room.tournament?.id !== tournamentId) {
       throw new WsException('You are not allowed to join this tournament');
     }
   }
 
-  private async getClientContext(client: Socket): Promise<ClientContext> {
+  private async getClientContext(
+    client: Socket,
+    tokenFromPayload?: string,
+  ): Promise<ClientContext> {
     if (client.data?.userId) {
       return { userId: client.data.userId as number };
     }
 
-    const token = this.extractToken(client);
+    const token = tokenFromPayload ?? this.extractToken(client);
     if (!token) {
       throw new WsException('Missing authorization token');
     }

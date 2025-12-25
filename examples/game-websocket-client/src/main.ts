@@ -1,4 +1,4 @@
-import { io, Socket } from 'socket.io-client';
+import { Manager, Socket, type ManagerOptions } from 'socket.io-client';
 import { backendUrl } from './config';
 
 type GameEvent = {
@@ -7,7 +7,7 @@ type GameEvent = {
   [key: string]: unknown;
 };
 
-type JoinPayload = { tournamentId: number; roomId: number };
+type JoinPayload = { tournamentId: number; roomId: number; token?: string };
 type TournamentResponse = {
   status: string;
   room?: string;
@@ -106,6 +106,7 @@ backendInfo.style.marginBottom = '16px';
 
 app.append(statusEl, backendInfo, controlsWrapper, logsEl, lastPayloadEl);
 
+let manager: Manager | undefined;
 let socket: GameSocket | undefined;
 let subscribedTournament: number | undefined;
 let subscribedRoom: number | undefined;
@@ -128,10 +129,15 @@ const ensureSocket = () => {
   }
 
   const token = tokenInput.value.trim();
-  const instance: GameSocket = io(`${backendUrl}/games`, {
+  const managerOptions: Partial<ManagerOptions> = {
     transports: ['websocket'],
     auth: token ? { token } : undefined,
-  });
+    path: '/socket.io',
+  };
+
+  manager = new Manager(backendUrl, managerOptions);
+  const instance = manager.socket('/games') as GameSocket;
+  instance.connect();
 
   instance.on('connect', () => {
     renderStatus(`Connected with id ${instance.id}`);
@@ -187,6 +193,10 @@ connectButton.addEventListener('click', () => {
   if (socket) {
     socket.disconnect();
     socket = undefined;
+    if (manager) {
+      manager.close();
+      manager = undefined;
+    }
     renderStatus('Manual disconnect');
     log('Disconnected by user');
     joinButton.disabled = true;
@@ -220,7 +230,12 @@ joinButton.addEventListener('click', () => {
   }
 
   const instance = ensureSocket();
-  const payload: JoinPayload = { tournamentId, roomId };
+  const token = tokenInput.value.trim();
+  const payload: JoinPayload = {
+    tournamentId,
+    roomId,
+    token: token || undefined,
+  };
   leaveButton.disabled = true;
   instance.emit('joinTournament', payload, (response) => {
     if (response?.status === 'joined') {
@@ -248,9 +263,11 @@ leaveButton.addEventListener('click', () => {
   }
 
   const instance = ensureSocket();
+  const token = tokenInput.value.trim();
   const payload: JoinPayload = {
     tournamentId: subscribedTournament,
     roomId: subscribedRoom,
+    token: token || undefined,
   };
   leaveButton.disabled = true;
   instance.emit('leaveTournament', payload, (response) => {
