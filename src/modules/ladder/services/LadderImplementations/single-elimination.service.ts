@@ -433,9 +433,9 @@ export class SingleEliminationService
         );
 
         const games: Game[] = [];
-        const numOfRounds = this.utilsService.calculateRounds(
-          remainingTeams.length,
-        );
+        // const numOfRounds = this.utilsService.calculateRounds(
+        //   remainingTeams.length,
+        // );
         remainingTeams = this.utilsService.shuffleArray(remainingTeams);
 
         const teamPairs = this.utilsService.chunkIntoPairs(remainingTeams);
