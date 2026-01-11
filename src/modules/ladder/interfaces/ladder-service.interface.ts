@@ -24,4 +24,11 @@ export interface ILadderService {
    * Reset/remove all games for a tournament
    */
   resetGames(tournamentId: number): Promise<void>;
+
+  /**
+   * Delete ladder and optionally all associated games for a tournament
+   * @param tournamentId - The tournament ID
+   * @param resetGames - Whether to also delete all games (default: true)
+   */
+  deleteLadder(tournamentId: number, resetGames?: boolean): Promise<void>;
 }

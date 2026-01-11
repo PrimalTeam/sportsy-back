@@ -66,6 +66,52 @@ export class BaseLadderService {
   }
 
   /**
+   * Deletes the ladder and optionally all associated games for a tournament
+   * @param tournamentId - The tournament ID
+   * @param resetGames - Whether to also delete all games (default: true)
+   */
+  async deleteLadder(
+    tournamentId: number,
+    resetGames: boolean = true,
+  ): Promise<void> {
+    this.logger.log(
+      `Deleting ladder for tournament ${tournamentId} (resetGames: ${resetGames})`,
+    );
+    const tournament = await this.findTournamentForLadder(tournamentId);
+
+    if (!tournament.leader) {
+      this.logger.warn(`No ladder to delete for tournament ${tournamentId}`);
+      return;
+    }
+
+    try {
+      // Optionally reset all games
+      if (resetGames && tournament.games && tournament.games.length > 0) {
+        await Promise.all(
+          tournament.games.map((game) => this.gameService.remove(game.id)),
+        );
+        this.logger.log(`Deleted ${tournament.games.length} games`);
+      } else if (!resetGames) {
+        this.logger.log('Keeping existing games (resetGames=false)');
+      }
+
+      // Clear the ladder
+      tournament.leader = {};
+      await this.tournamentRepository.save(tournament);
+
+      this.logger.log(
+        `Successfully deleted ladder for tournament ${tournamentId}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to delete ladder: ${error.message}`,
+        error.stack,
+      );
+      throw new BadRequestException('Failed to delete tournament ladder');
+    }
+  }
+
+  /**
    * Collects all ladder elements recursively from the tree structure
    */
   protected collectAllRounds(

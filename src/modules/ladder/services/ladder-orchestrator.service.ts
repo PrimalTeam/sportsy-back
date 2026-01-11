@@ -142,4 +142,43 @@ export class LadderOrchestratorService implements ILadderService {
         return this.single.resetGames(tournamentId);
     }
   }
+
+  async deleteLadder(
+    tournamentId: number,
+    resetGames?: boolean,
+  ): Promise<void> {
+    // Fetch tournament to determine correct implementation
+    const tournament = await this.tournamentRepository.findOne({
+      where: { id: tournamentId },
+    });
+
+    if (!tournament) {
+      this.logger.warn(
+        `Tournament ${tournamentId} not found, skipping delete ladder`,
+      );
+      return;
+    }
+
+    this.logger.debug(
+      `Routing deleteLadder to ${tournament.leaderType} implementation`,
+    );
+
+    switch (tournament.leaderType) {
+      case LeaderTypeEnum.SINGLE_ELIMINATION:
+        return this.single.deleteLadder(tournamentId, resetGames);
+      case LeaderTypeEnum.KNOCKOUT:
+      case LeaderTypeEnum.PLAYOFFS:
+      case LeaderTypeEnum.DOUBLE_ELIMINATION:
+        return this.doubleElim.deleteLadder(tournamentId, resetGames);
+      case LeaderTypeEnum.POOL_PLAY:
+        return this.pool.deleteLadder(tournamentId, resetGames);
+      case LeaderTypeEnum.ROUND_ROBIN:
+        return this.roundRobin.deleteLadder(tournamentId, resetGames);
+      default:
+        this.logger.warn(
+          `Unsupported leader type: ${tournament.leaderType}, falling back to single-elimination`,
+        );
+        return this.single.deleteLadder(tournamentId, resetGames);
+    }
+  }
 }

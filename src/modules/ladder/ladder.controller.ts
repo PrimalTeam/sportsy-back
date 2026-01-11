@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Delete,
   Query,
   UseGuards,
   HttpCode,
@@ -24,6 +25,7 @@ import { RoomGuard } from 'src/guards/room.guard';
 import { RoomRole } from 'src/decorators/roomRole.decorator';
 import { RoomUserRole } from '../roomUser/entities/roomUser.entity';
 import { GenerateLadderQueryDto } from './dto/generate-ladder.dto';
+import { DeleteLadderQueryDto } from './dto/delete-ladder.dto';
 import { LadderResponseDto, LadderElementDto } from './dto/ladder-response.dto';
 
 @ApiTags('Ladder')
@@ -117,5 +119,71 @@ export class LadderController {
 
     this.logger.log('Ladder update completed');
     return result;
+  }
+
+  @UseGuards(JwtGuard, RoomGuard)
+  @RoomRole(RoomUserRole.ADMIN)
+  @Delete('/delete/:roomId')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'roomId',
+    type: Number,
+    description: 'The room ID containing the tournament',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'resetGames',
+    required: false,
+    type: Boolean,
+    description: 'Whether to also delete all associated games',
+    example: true,
+  })
+  @ApiOperation({
+    summary: 'Delete tournament ladder',
+    description:
+      'Deletes the tournament ladder structure. Optionally deletes all associated games if resetGames is true (default: true).',
+  })
+  @ApiResponse({
+    status: 200,
+    description:
+      'Ladder deleted successfully. Games deleted if resetGames was true.',
+    schema: {
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+          example: 'Ladder deleted successfully',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Failed to delete ladder',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Room or tournament not found',
+  })
+  async delete(
+    @RoomFromRequest() room: Room,
+    @Query() query: DeleteLadderQueryDto,
+  ): Promise<{ message: string }> {
+    const resetGames = query.resetGames ?? true;
+
+    this.logger.log(
+      `Deleting ladder for room ${room.id}, tournament ${room.tournament.id} (resetGames: ${resetGames})`,
+    );
+
+    await this.ladderService.deleteLadder(room.tournament.id, resetGames);
+
+    this.logger.log('Ladder deletion completed');
+
+    return {
+      message: resetGames
+        ? 'Ladder and associated games deleted successfully'
+        : 'Ladder deleted successfully (games preserved)',
+    };
   }
 }
