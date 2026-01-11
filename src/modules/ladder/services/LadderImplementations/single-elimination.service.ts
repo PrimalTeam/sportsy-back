@@ -451,10 +451,7 @@ export class SingleEliminationService
           games.push(game);
         }
 
-        const elements = this.collectAllchildrensOfRound(
-          numOfRounds,
-          ladder.mainLadder,
-        );
+        const elements = this.collectAllchildrensOfRound(0, ladder.mainLadder);
         elements.forEach((element, index) => {
           const game = games[index];
           if (game) {
