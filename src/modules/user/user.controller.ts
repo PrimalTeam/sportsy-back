@@ -1,6 +1,8 @@
 import {
   Controller,
   Get,
+  Patch,
+  Body,
   UseGuards,
   Param,
   NotFoundException,
@@ -25,6 +27,7 @@ import { Room } from '../room/entities/room.entity';
 import { RoomUserRole } from '../roomUser/entities/roomUser.entity';
 import { User } from './entities/user.entity';
 import { UserDateInfoDto } from './dto/userDateInfo.dto';
+import { UpdateUserDto } from './dto/updateUser.dto';
 
 export class RoomWithRoleDto extends Room {
   @ApiProperty({
@@ -91,5 +94,27 @@ export class UserController {
       username: user.username,
       createdAt: user.createdAt,
     };
+  }
+
+  @ApiOperation({
+    summary: 'Update authenticated user profile',
+    description:
+      'Allows authenticated user to update their username, email, or password. All fields are optional.',
+  })
+  @ApiOkResponse({
+    description: 'User profile updated successfully.',
+    type: User,
+  })
+  @ApiNotFoundResponse({
+    description: 'User not found.',
+  })
+  @ApiBearerAuth()
+  @UseGuards(JwtGuard)
+  @Patch('profile')
+  async updateProfile(
+    @UserFromRequest() userFromToken: AccessTokenPayload,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return await this.userService.update(userFromToken.sub, updateUserDto);
   }
 }

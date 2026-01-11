@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, UserIdentifierType } from './entities/user.entity';
 import { CreateUserDto } from './dto/createUser.dto';
+import { UpdateUserDto } from './dto/updateUser.dto';
 import { Room } from '../room/entities/room.entity';
 import { RoomUserRole } from '../roomUser/entities/roomUser.entity';
 import { UserLookupService } from './interfaces/userService.interface';
@@ -40,6 +41,47 @@ export class UserService implements UserLookupService {
 
   async findOne(id: number): Promise<User | null> {
     return await this.usersRepository.findOne({ where: { id } });
+  }
+
+  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+    const user = await this.findOne(id);
+
+    if (!user) {
+      throw new HttpException(
+        `User with id ${id} not found`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    // Check if username is already taken by another user
+    if (updateUserDto.username && updateUserDto.username !== user.username) {
+      const existingUser = await this.findByUsername(updateUserDto.username);
+      if (existingUser && existingUser.id !== id) {
+        throw new HttpException('Username already taken', HttpStatus.CONFLICT);
+      }
+    }
+
+    // Check if email is already taken by another user
+    if (updateUserDto.email && updateUserDto.email !== user.email) {
+      const existingUser = await this.findByEmail(updateUserDto.email);
+      if (existingUser && existingUser.id !== id) {
+        throw new HttpException('Email already taken', HttpStatus.CONFLICT);
+      }
+    }
+
+    // Update fields
+    if (updateUserDto.username) {
+      user.username = updateUserDto.username;
+    }
+    if (updateUserDto.email) {
+      user.email = updateUserDto.email;
+    }
+    if (updateUserDto.password) {
+      user.password = updateUserDto.password;
+      // Password will be hashed by BeforeInsert hook in entity
+    }
+
+    return await this.usersRepository.save(user);
   }
 
   async getUserIdByIdentifier(
