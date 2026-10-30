@@ -2,9 +2,15 @@ import { IsString, IsOptional, IsNumber } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateTeamDto {
-  @ApiPropertyOptional({ description: 'Team icon in binary form.' })
+  @ApiPropertyOptional({
+    description:
+      'Team icon as a base64-encoded image (a data URI is also accepted). Send null to remove it.',
+    type: String,
+    nullable: true,
+  })
   @IsOptional()
-  icon?: Buffer;
+  @IsString()
+  icon?: string | null;
 
   @ApiPropertyOptional({
     description: 'Team display name.',
