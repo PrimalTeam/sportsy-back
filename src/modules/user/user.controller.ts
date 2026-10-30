@@ -57,19 +57,19 @@ export class UserController {
     return this.userService.getUserRooms(userFromToken.sub);
   }
 
-  @ApiOperation({ summary: 'Retrieve public profile of a user by username.' })
+  @ApiOperation({ summary: 'Retrieve public profile of a user by email.' })
   @ApiOkResponse({ description: 'User profile returned.', type: User })
   @ApiNotFoundResponse({
-    description: 'User with the provided username not found.',
+    description: 'User with the provided email not found.',
   })
   @ApiBearerAuth()
-  @ApiParam({ name: 'username', type: String })
+  @ApiParam({ name: 'email', type: String })
   @UseGuards(JwtGuard)
-  @Get('profile/:username')
-  async getProfile(@Param('username') username: string) {
-    const user = await this.userService.findByUsername(username);
+  @Get('profile/:email')
+  async getProfile(@Param('email') email: string) {
+    const user = await this.userService.findByEmail(email);
     if (!user) {
-      throw new NotFoundException(`User with username ${username} not found`);
+      throw new NotFoundException(`User with email ${email} not found`);
     }
     // return {
     //   email: user.email,
