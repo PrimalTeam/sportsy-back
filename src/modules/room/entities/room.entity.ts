@@ -8,6 +8,7 @@ import {
 import { RoomUser } from '../../roomUser/entities/roomUser.entity';
 import { Tournament } from 'src/modules/tournament/entities/tournament.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { imageTransformer } from 'src/utils/image-transformer';
 
 @Entity('rooms')
 export class Room {
@@ -19,9 +20,13 @@ export class Room {
   @Column()
   name: string;
 
-  @ApiPropertyOptional({ description: 'Binary icon for the room.' })
-  @Column('bytea', { nullable: true })
-  icon?: Buffer;
+  @ApiPropertyOptional({
+    description: 'Room icon as a base64-encoded image.',
+    type: String,
+    nullable: true,
+  })
+  @Column('bytea', { nullable: true, transformer: imageTransformer })
+  icon?: string | null;
 
   @ApiProperty({
     description: 'Users assigned to the room.',

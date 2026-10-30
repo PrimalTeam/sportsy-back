@@ -80,6 +80,9 @@ export class UserService implements UserLookupService {
       user.password = updateUserDto.password;
       // Password will be hashed by BeforeInsert hook in entity
     }
+    if (updateUserDto.avatar !== undefined) {
+      user.avatar = updateUserDto.avatar || null;
+    }
 
     return await this.usersRepository.save(user);
   }

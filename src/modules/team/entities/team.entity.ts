@@ -12,12 +12,17 @@ import {
   OneToMany,
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { imageTransformer } from 'src/utils/image-transformer';
 
 @Entity('teams')
 export class Team extends BaseEntity {
-  @ApiPropertyOptional({ description: 'Icon representing the team.' })
-  @Column('bytea', { nullable: true })
-  icon?: Buffer;
+  @ApiPropertyOptional({
+    description: 'Team icon as a base64-encoded image.',
+    type: String,
+    nullable: true,
+  })
+  @Column('bytea', { nullable: true, transformer: imageTransformer })
+  icon?: string | null;
 
   @ApiPropertyOptional({ description: 'Display name of the team.' })
   @Column()

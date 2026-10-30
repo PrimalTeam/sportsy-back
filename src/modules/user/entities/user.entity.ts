@@ -10,6 +10,7 @@ import * as bcrypt from 'bcrypt';
 import { Exclude } from 'class-transformer';
 import { RoomUser } from 'src/modules/roomUser/entities/roomUser.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { imageTransformer } from 'src/utils/image-transformer';
 
 export enum UserIdentifierType {
   USERNAME = 'username',
@@ -32,6 +33,14 @@ export class User {
   })
   @Column({ unique: true })
   email: string;
+
+  @ApiPropertyOptional({
+    description: 'Profile picture as a base64-encoded image.',
+    type: String,
+    nullable: true,
+  })
+  @Column('bytea', { nullable: true, transformer: imageTransformer })
+  avatar?: string | null;
 
   @ApiProperty({ description: 'Hashed login password.', writeOnly: true })
   @Exclude()

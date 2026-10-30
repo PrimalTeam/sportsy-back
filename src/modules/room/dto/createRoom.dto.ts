@@ -3,7 +3,12 @@ import {
   GenerateTournamentDto,
 } from 'src/modules/tournament/dto/createTournament.dto';
 import { CreateRoomUserDto } from 'src/modules/roomUser/dto/createRoomUser.dto';
-import { IsNotEmpty, IsString, ValidateNested } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -17,9 +22,14 @@ export class CreateRoomDto {
   readonly name: string;
 
   @ApiPropertyOptional({
-    description: 'Binary icon for the room encoded as bytes.',
+    description:
+      'Room icon as a base64-encoded image (a data URI is also accepted). Send null to remove it.',
+    type: String,
+    nullable: true,
   })
-  readonly icon?: Buffer;
+  @IsOptional()
+  @IsString()
+  readonly icon?: string | null;
 
   @ApiPropertyOptional({
     description: 'Initial members of the room with their roles.',

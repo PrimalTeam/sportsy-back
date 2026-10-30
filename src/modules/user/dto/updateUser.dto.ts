@@ -29,4 +29,15 @@ export class UpdateUserDto {
   @IsString()
   @MinLength(6)
   readonly password?: string;
+
+  @ApiProperty({
+    description:
+      'Profile picture as a base64-encoded image (a data URI is also accepted). Send null to remove it.',
+    type: String,
+    nullable: true,
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  readonly avatar?: string | null;
 }
